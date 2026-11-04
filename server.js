@@ -61,58 +61,62 @@ app.get('/test', (req, res) => {
 
             /* --- محیط میز و صندلی‌ها --- */
             #tableContainer { position: absolute; inset: 0; margin: auto; width: 100%; height: 100%; pointer-events: none; }
+            .center-table { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: rgba(255,215,0,0.15); filter: drop-shadow(0 0 10px rgba(255,215,0,0.3)); }
             
-            /* میز وسط */
-            .center-table { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: rgba(255,215,0,0.2); filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+            /* استایل عمومی صندلی‌ها */
+            .seat { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.4s ease; }
             
-            .seat { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.3s ease; }
-            
-            /* موقعیت صندلی‌ها (ریسپانسیو با درصد) */
-            .seat-0 { top: 12%; left: 50%; transform: translateX(-50%); } /* گرداننده */
-            
-            /* سمت چپ */
-            .seat-1 { top: 25%; left: 5%; }
-            .seat-2 { top: 37%; left: 3%; }
-            .seat-3 { top: 49%; left: 3%; }
-            .seat-4 { top: 61%; left: 3%; }
-            .seat-5 { top: 73%; left: 5%; }
-            
-            /* سمت راست */
-            .seat-6 { top: 25%; right: 5%; }
-            .seat-7 { top: 37%; right: 3%; }
-            .seat-8 { top: 49%; right: 3%; }
-            .seat-9 { top: 61%; right: 3%; }
-            .seat-10 { top: 73%; right: 5%; }
-            
-            /* پایین (اضافه شده برای ۱۶ نفر) */
-            .seat-11 { bottom: 12%; left: 20%; }
-            .seat-12 { bottom: 10%; left: 40%; }
-            .seat-13 { bottom: 10%; right: 40%; }
-            .seat-14 { bottom: 12%; right: 20%; }
+            /* وقتی صندلی خالیه، نامرئیه */
+            .seat.empty { opacity: 0; pointer-events: none; transform: scale(0.5); }
 
-            /* استایل آواتار */
-            .avatar-box { width: 50px; height: 50px; border-radius: 50%; background: #2a2a2a; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 20px; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+            /* چینش صندلی‌ها (۲ گرداننده بالا، ۸ چپ، ۸ راست) */
+            
+            /* گرداننده‌ها */
+            .seat-h1 { top: 12%; left: 35%; }
+            .seat-h2 { top: 12%; right: 35%; }
+            
+            /* ستون چپ */
+            .seat-l1 { top: 24%; left: 12%; }
+            .seat-l2 { top: 32%; left: 4%; }
+            .seat-l3 { top: 40%; left: 2%; }
+            .seat-l4 { top: 48%; left: 2%; }
+            .seat-l5 { top: 56%; left: 2%; }
+            .seat-l6 { top: 64%; left: 2%; }
+            .seat-l7 { top: 72%; left: 4%; }
+            .seat-l8 { top: 80%; left: 12%; }
+            
+            /* ستون راست */
+            .seat-r1 { top: 24%; right: 12%; }
+            .seat-r2 { top: 32%; right: 4%; }
+            .seat-r3 { top: 40%; right: 2%; }
+            .seat-r4 { top: 48%; right: 2%; }
+            .seat-r5 { top: 56%; right: 2%; }
+            .seat-r6 { top: 64%; right: 2%; }
+            .seat-r7 { top: 72%; right: 4%; }
+            .seat-r8 { top: 80%; right: 12%; }
+
+            /* آواتار و شماره */
+            .avatar-box { width: 48px; height: 48px; border-radius: 50%; background: #2a2a2a; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 20px; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
             .seat.host .avatar-box { border-color: #ffd700; box-shadow: 0 0 15px #ffd700; }
             
-            /* شماره صندلی */
             .seat-number { position: absolute; top: -5px; left: -5px; background: #333; color: #aaa; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; font-weight: bold; }
-            .seat.host .seat-number { background: #ffd700; color: #000; }
+            .seat.host .seat-number { background: #ffd700; color: #000; border-color: #ffd700; }
 
-            /* وضعیت‌های میکروفن */
+            /* وضعیت میکروفن */
             .avatar-box.speaking { border-color: #28a745; box-shadow: 0 0 15px #28a745; transform: scale(1.1); }
             .avatar-box.muted { border-color: #dc3545; opacity: 0.8; }
-            .avatar-box.muted::after { content: '🔇'; position: absolute; bottom: -5px; right: -5px; font-size: 14px; background: #111; border-radius: 50%; padding: 2px; }
+            .avatar-box.muted::after { content: '🔇'; position: absolute; bottom: -5px; right: -5px; font-size: 12px; background: #111; border-radius: 50%; padding: 1px; }
             
-            .seat-name { font-size: 11px; margin-top: 4px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 8px; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+            .seat-name { font-size: 10px; margin-top: 4px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 8px; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
 
             /* نشانگر دست */
-            .hand-indicator { display: none; position: absolute; top: -20px; right: -10px; font-size: 22px; animation: wave 1s infinite ease-in-out; z-index: 5; }
+            .hand-indicator { display: none; position: absolute; top: -15px; right: -10px; font-size: 20px; animation: wave 1s infinite ease-in-out; z-index: 5; }
             .seat.hand-raised .hand-indicator { display: block; }
             @keyframes wave { 0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(20deg); } 100% { transform: rotate(0deg); } }
 
             /* استیکرهای شناور */
-            .floating-reaction { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); font-size: 26px; opacity: 1; animation: floatUp 1.5s ease-out forwards; pointer-events: none; z-index: 50; }
-            @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -60px) scale(1.5); } }
+            .floating-reaction { position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%); font-size: 24px; opacity: 1; animation: floatUp 1.5s ease-out forwards; pointer-events: none; z-index: 50; }
+            @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -50px) scale(1.5); } }
 
             /* پیام‌های شناور */
             #notificationArea { position: absolute; top: 60px; width: 100%; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 20; gap: 5px; }
@@ -120,13 +124,15 @@ app.get('/test', (req, res) => {
             .toast-msg.show { opacity: 1; transform: translateY(0); }
             .toast-msg.hide { opacity: 0; transform: translateY(-20px); }
             .toast-msg .sender-name { color: #ffd700; font-weight: bold; font-size: 11px; }
-            .toast-msg .check-icon { color: #28a745; font-weight: bold; }
 
             /* --- نوار پایین --- */
             .bottom-bar { position: absolute; bottom: 0; width: 100%; padding: 15px 10px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 10; }
             .action-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); transition: all 0.2s; }
             .action-btn:active { transform: scale(0.9); }
             .action-btn.active { background: rgba(255, 215, 0, 0.3); border: 1px solid #ffd700; }
+            
+            /* استایل قفل شدن دکمه لایک/دیس‌لایک */
+            .action-btn.disabled { opacity: 0.3; pointer-events: none; }
             
             .mic-btn-container { position: relative; }
             .mic-btn { width: 70px; height: 70px; border-radius: 50%; border: 4px solid #28a745; background: #222; color: #fff; font-size: 28px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(40, 167, 69, 0.4); transition: all 0.2s ease; }
@@ -167,7 +173,6 @@ app.get('/test', (req, res) => {
 
             <div id="tableContainer">
                 <div class="center-table">⚙️</div>
-                <!-- صندلی ها با جاوااسکریپت اینجا ساخته می شوند -->
             </div>
 
             <div class="bottom-bar">
@@ -217,28 +222,32 @@ app.get('/test', (req, res) => {
             
             let localUser = null;
             let isHandRaised = false;
+            let lastLikeTime = 0;
+            let lastDislikeTime = 0;
 
-            // ساخت صندلی‌ها (۱ گرداننده + ۱۴ بازیکن = ۱۵ صندلی)
+            // ساخت ۱۸ صندلی (۲ گرداننده، ۸ چپ، ۸ راست)
             function createSeats() {
-                // صندلی گرداننده (شماره 0)
-                const hostSeat = document.createElement('div');
-                hostSeat.className = 'seat seat-0 host';
-                hostSeat.id = 'seat-0';
-                hostSeat.innerHTML = \`
-                    <div class="avatar-box">
-                        👑
-                        <div class="seat-number">H</div>
-                        <div class="hand-indicator">✋</div>
-                    </div>
-                    <div class="seat-name">گرداننده</div>
-                \`;
-                tableContainer.appendChild(hostSeat);
-
-                // صندلی بازیکنان (شماره 1 تا 14)
-                for (let i = 1; i <= 14; i++) {
+                // ۲ صندلی گرداننده
+                for(let i=1; i<=2; i++) {
                     const seat = document.createElement('div');
-                    seat.className = 'seat seat-' + i;
-                    seat.id = 'seat-' + i;
+                    seat.className = 'seat seat-h' + i + ' host empty';
+                    seat.id = 'seat-h' + i;
+                    seat.innerHTML = \`
+                        <div class="avatar-box">
+                            👑
+                            <div class="seat-number">H\${i}</div>
+                            <div class="hand-indicator">✋</div>
+                        </div>
+                        <div class="seat-name">گرداننده \${i}</div>
+                    \`;
+                    tableContainer.appendChild(seat);
+                }
+
+                // ۸ صندلی سمت چپ
+                for (let i = 1; i <= 8; i++) {
+                    const seat = document.createElement('div');
+                    seat.className = 'seat seat-l' + i + ' empty';
+                    seat.id = 'seat-l' + i;
                     seat.innerHTML = \`
                         <div class="avatar-box">
                             💺
@@ -246,6 +255,22 @@ app.get('/test', (req, res) => {
                             <div class="hand-indicator">✋</div>
                         </div>
                         <div class="seat-name">صندلی \${i}</div>
+                    \`;
+                    tableContainer.appendChild(seat);
+                }
+
+                // ۸ صندلی سمت راست
+                for (let i = 1; i <= 8; i++) {
+                    const seat = document.createElement('div');
+                    seat.className = 'seat seat-r' + i + ' empty';
+                    seat.id = 'seat-r' + i;
+                    seat.innerHTML = \`
+                        <div class="avatar-box">
+                            💺
+                            <div class="seat-number">\${i + 8}</div>
+                            <div class="hand-indicator">✋</div>
+                        </div>
+                        <div class="seat-name">صندلی \${i + 8}</div>
                     \`;
                     tableContainer.appendChild(seat);
                 }
@@ -269,21 +294,18 @@ app.get('/test', (req, res) => {
                 }, 15000);
             }
 
-            // پیدا کردن صندلی خالی (اول گرداننده، بعد بازیکنان)
-            function assignSeat(identity, isMuted, isHost = false) {
+            // نشستن روی صندلی
+            function assignSeat(identity, isMuted) {
                 let assignedSeat = null;
                 
-                // اگر گرداننده است، صندلی 0
-                if (isHost) {
-                    assignedSeat = document.getElementById('seat-0');
-                } else {
-                    // پیدا کردن اولین صندلی خالی از بین 1 تا 14
-                    for (let i = 1; i <= 14; i++) {
-                        const seat = document.getElementById('seat-' + i);
-                        if (!seat.hasAttribute('data-identity') || seat.getAttribute('data-identity') === identity) {
-                            assignedSeat = seat; 
-                            break;
-                        }
+                // لیست اولویت‌ها: گرداننده 1، گرداننده 2، چپ 1-8، راست 1-8
+                const seatIds = ['seat-h1', 'seat-h2', 'seat-l1', 'seat-l2', 'seat-l3', 'seat-l4', 'seat-l5', 'seat-l6', 'seat-l7', 'seat-l8', 'seat-r1', 'seat-r2', 'seat-r3', 'seat-r4', 'seat-r5', 'seat-r6', 'seat-r7', 'seat-r8'];
+
+                for (let id of seatIds) {
+                    const seat = document.getElementById(id);
+                    if (seat.classList.contains('empty') || seat.getAttribute('data-identity') === identity) {
+                        assignedSeat = seat; 
+                        break;
                     }
                 }
 
@@ -291,10 +313,11 @@ app.get('/test', (req, res) => {
                     assignedSeat.classList.remove('empty');
                     assignedSeat.setAttribute('data-identity', identity);
                     assignedSeat.querySelector('.seat-name').innerText = identity;
-                    // تغییر شکل آواتار از صندلی خالی به کاربر (با حرف اول اسم)
                     assignedSeat.querySelector('.avatar-box').childNodes[0].nodeValue = identity.charAt(0).toUpperCase();
                     updateSeatMicState(identity, isMuted);
                     return assignedSeat;
+                } else {
+                    showNotification('اتاق پر است!', identity, true);
                 }
             }
 
@@ -330,24 +353,19 @@ app.get('/test', (req, res) => {
                 if (track.kind === 'audio') document.getElementById('audio-container').appendChild(track.attach());
             });
 
-            // وقتی بازیکن جدید وارد می‌شود
             room.on(LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
-                // اگر هیچ‌کس گرداننده نبود، این نفر گرداننده می‌شود
-                const hostSeat = document.getElementById('seat-0');
-                const isHost = !hostSeat.hasAttribute('data-identity');
-                
-                assignSeat(participant.identity, !participant.isMicrophoneEnabled, isHost);
+                assignSeat(participant.identity, !participant.isMicrophoneEnabled);
                 showNotification(\`وارد اتاق شد\`, participant.identity, true);
             });
 
             room.on(LivekitClient.RoomEvent.ParticipantDisconnected, (participant) => {
                 const seat = document.querySelector(\`.seat[data-identity="\${participant.identity}"]\`);
                 if (seat) {
-                    const seatNum = seat.id.split('-')[1];
-                    seat.classList.add('empty');
+                    const seatText = seat.querySelector('.seat-name').innerText;
+                    seat.classList.add('empty'); // مخفی شدن
                     seat.classList.remove('hand-raised');
-                    seat.querySelector('.seat-name').innerText = seatNum === '0' ? 'گرداننده' : \`صندلی \${seatNum}\`;
-                    seat.querySelector('.avatar-box').childNodes[0].nodeValue = seatNum === '0' ? '👑' : '💺';
+                    seat.querySelector('.seat-name').innerText = seatText.includes('گرداننده') ? seatText : seatText; // حفظ اسم صندلی
+                    seat.querySelector('.avatar-box').childNodes[0].nodeValue = seat.querySelector('.seat-number').innerText.includes('H') ? '👑' : '💺';
                     seat.querySelector('.avatar-box').className = 'avatar-box';
                     seat.removeAttribute('data-identity');
                 }
@@ -411,12 +429,8 @@ app.get('/test', (req, res) => {
                     gameRoom.style.display = 'flex';
                     document.getElementById('displayRoomName').innerText = rm;
                     
-                    // بررسی اینکه آیا کاربر اول است (گرداننده)
-                    const hostSeat = document.getElementById('seat-0');
-                    const isHost = !hostSeat.hasAttribute('data-identity');
-                    
-                    assignSeat(user, true, isHost);
-                    showNotification(isHost ? 'شما به عنوان گرداننده وارد شدید' : 'شما وارد اتاق شدید', user, true);
+                    assignSeat(user, true);
+                    showNotification('شما وارد اتاق شدید', user, true);
                     
                 } catch (e) {
                     alert('خطا: ' + e.message);
@@ -453,14 +467,30 @@ app.get('/test', (req, res) => {
                 }
             };
 
+            // لایک ۵ ثانیه یکبار
             likeBtn.onclick = () => {
+                const now = Date.now();
+                if (now - lastLikeTime < 5000) return;
+                lastLikeTime = now;
+                
                 sendData({ type: 'reaction', emoji: '👍' });
                 showReaction(localUser, '👍');
+                
+                likeBtn.classList.add('disabled');
+                setTimeout(() => likeBtn.classList.remove('disabled'), 5000);
             };
 
+            // دیس‌لایک ۵ ثانیه یکبار
             dislikeBtn.onclick = () => {
+                const now = Date.now();
+                if (now - lastDislikeTime < 5000) return;
+                lastDislikeTime = now;
+                
                 sendData({ type: 'reaction', emoji: '👎' });
                 showReaction(localUser, '👎');
+                
+                dislikeBtn.classList.add('disabled');
+                setTimeout(() => dislikeBtn.classList.remove('disabled'), 5000);
             };
 
             openChatBtn.onclick = () => {
