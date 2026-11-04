@@ -68,61 +68,59 @@ app.get('/test', (req, res) => {
             .seat { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.4s ease; }
             .seat.empty { opacity: 0; pointer-events: none; transform: scale(0.5); }
 
-            /* چینش ۱۶ صندلی بازیکنان (بدون گرداننده در وسط) */
+            /* چینش ۱۶ صندلی: ۱ و ۲ روبروی هم، ۳ و ۴ روبروی هم و ... */
             /* ستون چپ */
-            .seat-1 { top: 15%; left: 8%; }
-            .seat-3 { top: 28%; left: 3%; }
-            .seat-5 { top: 41%; left: 1%; }
-            .seat-7 { top: 54%; left: 1%; }
-            .seat-9 { top: 67%; left: 3%; }
-            .seat-11 { top: 80%; left: 8%; }
+            .seat-1 { top: 12%; left: 12%; }
+            .seat-3 { top: 22%; left: 6%; }
+            .seat-5 { top: 32%; left: 2%; }
+            .seat-7 { top: 42%; left: 1%; }
+            .seat-9 { top: 52%; left: 1%; }
+            .seat-11 { top: 62%; left: 2%; }
+            .seat-13 { top: 72%; left: 6%; }
+            .seat-15 { top: 82%; left: 12%; }
             
             /* ستون راست */
-            .seat-2 { top: 15%; right: 8%; }
-            .seat-4 { top: 28%; right: 3%; }
-            .seat-6 { top: 41%; right: 1%; }
-            .seat-8 { top: 54%; right: 1%; }
-            .seat-10 { top: 67%; right: 3%; }
-            .seat-12 { top: 80%; right: 8%; }
-            
-            /* صندلی‌های اضافه (برای ۱۶ نفر، فعلا نامرئی) */
-            .seat-13 { top: 90%; left: 25%; }
-            .seat-14 { top: 90%; right: 25%; }
-            .seat-15 { top: 90%; left: 40%; }
-            .seat-16 { top: 90%; right: 40%; }
+            .seat-2 { top: 12%; right: 12%; }
+            .seat-4 { top: 22%; right: 6%; }
+            .seat-6 { top: 32%; right: 2%; }
+            .seat-8 { top: 42%; right: 1%; }
+            .seat-10 { top: 52%; right: 1%; }
+            .seat-12 { top: 62%; right: 2%; }
+            .seat-14 { top: 72%; right: 6%; }
+            .seat-16 { top: 82%; right: 12%; }
 
             /* آواتار و شماره */
-            .avatar-box { width: 60px; height: 60px; border-radius: 50%; background: #222; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 24px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.6); transition: all 0.3s; }
-            
-            .seat-number { position: absolute; top: -5px; left: -5px; background: #333; color: #aaa; width: 24px; height: 24px; border-radius: 50%; font-size: 12px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; font-weight: bold; z-index: 3; }
+            .avatar-box { width: 55px; height: 55px; border-radius: 50%; background: #222; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 22px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.6); transition: all 0.3s; }
+            .seat-number { position: absolute; top: -5px; left: -5px; background: #333; color: #aaa; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; font-weight: bold; z-index: 3; }
 
-            /* وضعیت صحبت کردن (زرد) - بدون آیکون بلندگو */
+            /* وضعیت صحبت کردن (زرد) */
             .avatar-box.speaking { border-color: #ffd700; box-shadow: 0 0 25px #ffd700; transform: scale(1.1); }
-            
-            .seat-name { font-size: 12px; margin-top: 5px; background: #000; padding: 2px 10px; border-radius: 6px; max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid #333; text-align: center; direction: rtl; }
+            .seat-name { font-size: 11px; margin-top: 5px; background: #000; padding: 2px 8px; border-radius: 6px; max-width: 75px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid #333; text-align: center; direction: rtl; }
 
             /* نشانگر دست بلند شده */
-            .hand-indicator { display: none; position: absolute; top: -20px; right: -15px; font-size: 26px; animation: wave 1s infinite ease-in-out; z-index: 5; filter: drop-shadow(0 0 5px #ffd700); }
+            .hand-indicator { display: none; position: absolute; top: -20px; right: -15px; font-size: 24px; animation: wave 1s infinite ease-in-out; z-index: 5; filter: drop-shadow(0 0 5px #ffd700); }
             .seat.hand-raised .hand-indicator { display: block; }
             @keyframes wave { 0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(20deg); } 100% { transform: rotate(0deg); } }
 
             /* پیام‌های شناور */
             #notificationArea { position: absolute; top: max(70px, env(safe-area-inset-top)); width: 100%; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 20; gap: 5px; }
-            .toast-msg { background: rgba(0, 0, 0, 0.9); color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 13px; border: 1px solid #444; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; max-width: 90%; word-wrap: break-word; text-align: center; direction: rtl; }
+            .toast-msg { background: rgba(0, 0, 0, 0.9); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; border: 1px solid #444; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; max-width: 90%; word-wrap: break-word; text-align: center; direction: rtl; }
             .toast-msg.show { opacity: 1; transform: translateY(0); }
             .toast-msg.hide { opacity: 0; transform: translateY(-20px); }
             .toast-msg .sender-name { color: #ffd700; font-weight: bold; font-size: 11px; }
 
-            /* --- نوار پایین (چپ چین) --- */
-            .bottom-bar { position: absolute; bottom: 0; width: 100%; padding: 15px 20px; padding-bottom: max(15px, env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: flex-end; z-index: 10; direction: ltr; }
+            /* --- نوار پایین و میکروفن چسبیده به دیوار --- */
+            .bottom-bar { position: absolute; bottom: 0; width: 100%; padding: 0 20px; padding-bottom: max(0px, env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: flex-end; z-index: 10; direction: ltr; }
             
-            /* دکمه بلند کردن دست (سمت چپ) */
-            .action-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: rgba(40,40,40,0.8); color: #fff; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); transition: all 0.2s; border: 1px solid #333; margin-bottom: 15px;}
+            /* دکمه بلند کردن دست */
+            .action-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: rgba(40,40,40,0.8); color: #fff; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); transition: all 0.2s; border: 1px solid #333; margin-bottom: 20px;}
             .action-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
             .action-btn.active { background: rgba(255, 215, 0, 0.3); border-color: #ffd700; }
 
-            /* دکمه میکروفن (وسط) */
+            /* دکمه میکروفن و نوار اکولایزر */
+            .mic-btn-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: -5px; }
             .mic-btn-container { position: relative; width: 90px; height: 90px; display: flex; justify-content: center; align-items: center; }
+            
             .timer-ring { position: absolute; top: 0; left: 0; width: 90px; height: 90px; transform: rotate(-90deg); pointer-events: none; }
             .timer-circle { fill: none; stroke: #ffd700; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 251.2; stroke-dashoffset: 0; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; }
             
@@ -133,8 +131,19 @@ app.get('/test', (req, res) => {
             
             .mic-btn.open { background: #28a745; color: white; border: 2px solid #4cd964; }
 
+            /* حالت قطع اتصال (Disconnected) */
+            .mic-btn.disconnected { background: #555; color: white; border: 2px dashed #777; }
+            .mic-btn.disconnected::after { display: none; }
+            .mic-btn.disconnected .mic-icon { display: none; }
+            .mic-btn.disconnected::before { content: '🛜'; font-size: 28px; opacity: 0.8; }
+
+            /* حالت قفل ۳ ثانیه‌ای */
             .mic-btn.cooldown { background: #333; color: #aaa; cursor: not-allowed; font-size: 24px; font-weight: bold; }
             .mic-btn.cooldown::after { display: none; }
+
+            /* نوار اکولایزر زیر میکروفن */
+            #audio-visualizer { width: 60px; height: 4px; background: #333; border-radius: 2px; margin-top: 5px; overflow: hidden; position: relative; z-index: 3;}
+            #audio-visualizer-bar { width: 100%; height: 100%; background: #28a745; transform-origin: center; transform: scaleX(0); transition: transform 0.05s linear; border-radius: 2px; box-shadow: 0 0 10px #28a745; }
 
             #audio-container { display: none; }
 
@@ -177,11 +186,19 @@ app.get('/test', (req, res) => {
             <div class="bottom-bar">
                 <button class="action-btn" id="raiseHandBtn">✋</button>
                 
-                <div class="mic-btn-container">
-                    <svg class="timer-ring">
-                        <circle class="timer-circle" cx="45" cy="45" r="40"></circle>
-                    </svg>
-                    <button class="mic-btn closed" id="micBtn">🎙️</button>
+                <div class="mic-btn-wrapper">
+                    <div class="mic-btn-container">
+                        <svg class="timer-ring">
+                            <circle class="timer-circle" cx="45" cy="45" r="40"></circle>
+                        </svg>
+                        <button class="mic-btn closed" id="micBtn">
+                            <span class="mic-icon">🎙️</span>
+                        </button>
+                    </div>
+                    <!-- نوار اکولایزر زیر میکروفن -->
+                    <div id="audio-visualizer">
+                        <div id="audio-visualizer-bar"></div>
+                    </div>
                 </div>
                 
                 <div style="width: 50px;"></div>
@@ -212,6 +229,7 @@ app.get('/test', (req, res) => {
             
             const micBtn = document.getElementById('micBtn');
             const raiseHandBtn = document.getElementById('raiseHandBtn');
+            const visualizerBar = document.getElementById('audio-visualizer-bar');
             
             const chatModal = document.getElementById('chatModal');
             const openChatBtn = document.getElementById('openChatBtn');
@@ -230,13 +248,16 @@ app.get('/test', (req, res) => {
             let timeLeft = 60;
             let isCooldown = false;
 
-            // ترتیب نشستن: از ۱ تا ۱۶ (گرداننده‌ها ۱۷ و ۱۸ بعدا اضافه میشن)
-            const seatPriority = [
-                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
-            ];
+            // متغیرهای اکولایزر
+            let audioCtx = null;
+            let analyser = null;
+            let dataArray = null;
+            let visualizerAnimation = null;
+            let micStream = null;
+
+            const seatPriority = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
 
             function createSeats() {
-                // ۱۶ صندلی بازیکن
                 for (let i = 1; i <= 16; i++) {
                     const seat = document.createElement('div');
                     seat.className = 'seat seat-' + i + ' empty';
@@ -286,24 +307,7 @@ app.get('/test', (req, res) => {
                             break;
                         }
                     }
-                    
-                    updateSeatMicState(identity, isMuted);
                     return assignedSeat;
-                } else {
-                    showNotification('اتاق پر است!', identity, true);
-                }
-            }
-
-            function updateSeatMicState(identity, isMuted) {
-                const seat = document.querySelector('.seat[data-identity="' + identity + '"]');
-                if (seat) {
-                    const avatar = seat.querySelector('.avatar-box');
-                    // آیکون بلندگو کاملاً حذف شده، فقط کلاس صحبت کردن تغییر می‌کند
-                    if (isMuted) {
-                        avatar.classList.remove('mic-open');
-                    } else {
-                        avatar.classList.add('mic-open');
-                    }
                 }
             }
 
@@ -320,13 +324,13 @@ app.get('/test', (req, res) => {
                 }
             }
 
-            // شروع تایمر ۶۰ ثانیه‌ای
+            // --- شروع و پایان تایمر ---
             function startMicTimer() {
                 isCooldown = false;
                 timeLeft = 60;
                 timerCircle.style.strokeDasharray = circleLength;
                 timerCircle.style.strokeDashoffset = 0;
-                timerCircle.style.stroke = '#ffd700'; // زرد
+                timerCircle.style.stroke = '#ffd700'; 
                 
                 clearInterval(micInterval);
                 micInterval = setInterval(function() {
@@ -341,18 +345,17 @@ app.get('/test', (req, res) => {
                 }, 100);
             }
 
-            // پایان میکروفن و شروع ۳ ثانیه قفل (لودینگ پر شدن)
             function closeMicAndCooldown() {
                 isCooldown = true;
                 clearInterval(micInterval);
                 room.localParticipant.setMicrophoneEnabled(false);
                 micBtn.classList.remove('open');
                 micBtn.classList.add('cooldown');
-                updateSeatMicState(localUser, true);
+                stopVisualizer();
 
                 let cooldown = 3.0;
-                timerCircle.style.stroke = '#dc3545'; // قرمز برای نشان دادن مسدودی
-                timerCircle.style.strokeDashoffset = circleLength; // شروع از خالی
+                timerCircle.style.stroke = '#dc3545'; 
+                timerCircle.style.strokeDashoffset = circleLength; 
 
                 clearInterval(cooldownInterval);
                 cooldownInterval = setInterval(function() {
@@ -360,19 +363,65 @@ app.get('/test', (req, res) => {
                     if (cooldown <= 0) {
                         clearInterval(cooldownInterval);
                         isCooldown = false;
-                        timerCircle.style.strokeDashoffset = 0; // ریست
+                        timerCircle.style.strokeDashoffset = 0; 
                         micBtn.classList.remove('cooldown');
                         micBtn.classList.add('closed');
-                        micBtn.innerText = '🎙️';
+                        micBtn.querySelector('.mic-icon').innerText = '🎙️';
                     } else {
-                        micBtn.innerText = Math.ceil(cooldown);
-                        // پر شدن دایره در طول ۳ ثانیه
+                        micBtn.querySelector('.mic-icon').innerText = Math.ceil(cooldown);
                         const fillOffset = (cooldown / 3.0) * circleLength;
                         timerCircle.style.strokeDashoffset = fillOffset;
                     }
                 }, 100);
             }
 
+            // --- اکولایزر صدا ---
+            function startVisualizer() {
+                if (!room.localParticipant.isMicrophoneEnabled) return;
+                
+                // گرفتن ترک میکروفن از LiveKit
+                const pub = room.localParticipant.getTrackPublication(LivekitClient.Track.Source.Microphone);
+                if (!pub || !pub.track) return;
+                
+                micStream = new MediaStream([pub.track.mediaStreamTrack]);
+                
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioCtx.createAnalyser();
+                const source = audioCtx.createMediaStreamSource(micStream);
+                source.connect(analyser);
+                analyser.fftSize = 256;
+                dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+                function draw() {
+                    if (!room.localParticipant.isMicrophoneEnabled) return;
+                    requestAnimationFrame(draw);
+                    
+                    analyser.getByteFrequencyData(dataArray);
+                    let sum = 0;
+                    for (let i = 0; i < dataArray.length; i++) {
+                        sum += dataArray[i];
+                    }
+                    let average = sum / dataArray.length;
+                    
+                    // تبدیل میانگین صدا به مقیاس برای نوار
+                    let scale = 1 + (average / 255) * 8; 
+                    if(scale > 10) scale = 10;
+                    
+                    visualizerBar.style.transform = 'scaleX(' + scale + ')';
+                    visualizerBar.style.opacity = 0.5 + (average/255)*0.5;
+                }
+                draw();
+            }
+
+            function stopVisualizer() {
+                if (audioCtx) {
+                    audioCtx.close();
+                    audioCtx = null;
+                }
+                visualizerBar.style.transform = 'scaleX(0)';
+            }
+
+            // --- رویدادهای LiveKit ---
             room.on(LivekitClient.RoomEvent.TrackSubscribed, function(track) {
                 if (track.kind === 'audio') document.getElementById('audio-container').appendChild(track.attach());
             });
@@ -387,20 +436,32 @@ app.get('/test', (req, res) => {
                 if (seat) {
                     seat.classList.add('empty');
                     seat.classList.remove('hand-raised');
-                    seat.querySelector('.avatar-box').classList.remove('mic-open', 'speaking');
+                    seat.querySelector('.avatar-box').classList.remove('speaking');
                     seat.removeAttribute('data-identity');
                 }
                 showNotification('از اتاق خارج شد', participant.identity, true);
             });
 
-            room.on(LivekitClient.RoomEvent.TrackMuted, function(pub, participant) {
-                if (pub.kind === 'audio') updateSeatMicState(participant.identity, true);
-            });
-            room.on(LivekitClient.RoomEvent.TrackUnmuted, function(pub, participant) {
-                if (pub.kind === 'audio') updateSeatMicState(participant.identity, false);
-            });
-
             room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, updateSpeakingState);
+            
+            // مدیریت قطعی و اتصال مجدد
+            room.on(LivekitClient.RoomEvent.Disconnected, function() {
+                micBtn.classList.add('disconnected');
+                micBtn.classList.remove('closed', 'open', 'cooldown');
+                stopVisualizer();
+                showNotification('ارتباط با سرور قطع شد', 'سیستم', true);
+            });
+            room.on(LivekitClient.RoomEvent.Reconnecting, function() {
+                micBtn.classList.add('disconnected');
+            });
+            room.on(LivekitClient.RoomEvent.Reconnected, function() {
+                micBtn.classList.remove('disconnected');
+                if(room.localParticipant.isMicrophoneEnabled) {
+                    micBtn.classList.add('open');
+                } else {
+                    micBtn.classList.add('closed');
+                }
+            });
 
             room.on(LivekitClient.RoomEvent.DataReceived, function(payload, participant) {
                 const data = JSON.parse(new TextDecoder().decode(payload));
@@ -425,6 +486,7 @@ app.get('/test', (req, res) => {
                 room.localParticipant.publishData(payload, LivekitClient.DataPacket_Kind.RELIABLE);
             }
 
+            // --- دکمه‌ها ---
             document.getElementById('joinBtn').onclick = async function() {
                 const user = document.getElementById('username').value.trim();
                 const rm = document.getElementById('roomname').value.trim();
@@ -434,6 +496,8 @@ app.get('/test', (req, res) => {
                 btn.innerText = 'در حال اتصال...';
                 btn.disabled = true;
                 localUser = user;
+                
+                micBtn.classList.add('disconnected');
 
                 try {
                     const res = await fetch('/token?room=' + encodeURIComponent(rm) + '&user=' + encodeURIComponent(user));
@@ -447,6 +511,9 @@ app.get('/test', (req, res) => {
                     gameRoom.style.display = 'flex';
                     document.getElementById('displayRoomName').innerText = rm;
                     
+                    micBtn.classList.remove('disconnected');
+                    micBtn.classList.add('closed');
+                    
                     assignSeat(user, true);
                     showNotification('شما وارد اتاق شدید', user, true);
                     
@@ -454,27 +521,26 @@ app.get('/test', (req, res) => {
                     alert('خطا: ' + e.message);
                     btn.innerText = 'ورود به بازی';
                     btn.disabled = false;
+                    micBtn.classList.remove('disconnected');
                 }
             };
 
-            // دکمه میکروفن
             micBtn.onclick = async function() {
-                if (isCooldown) return; // اگر در حال قفل ۳ ثانیه‌ای بود، کاری نکن
+                if (isCooldown || micBtn.classList.contains('disconnected')) return;
 
                 const isMicOn = room.localParticipant.isMicrophoneEnabled;
                 if (!isMicOn) {
                     await room.localParticipant.setMicrophoneEnabled(true);
                     micBtn.classList.remove('closed');
                     micBtn.classList.add('open');
-                    micBtn.innerText = '🎙️';
-                    updateSeatMicState(localUser, false);
+                    micBtn.querySelector('.mic-icon').innerText = '🎙️';
                     startMicTimer();
+                    setTimeout(startVisualizer, 200); // شروع اکولایزر بعد از فعال شدن میک
                 } else {
                     closeMicAndCooldown();
                 }
             };
 
-            // دکمه دست
             raiseHandBtn.onclick = function() {
                 isHandRaised = !isHandRaised;
                 sendData({ type: 'hand', state: isHandRaised });
@@ -489,7 +555,6 @@ app.get('/test', (req, res) => {
                 }
             };
 
-            // چت
             openChatBtn.onclick = function() {
                 chatModal.style.display = 'flex';
                 modalChatInput.value = '';
