@@ -23,7 +23,6 @@ app.get('/token', async (req, res) => {
 });
 
 app.get('/test', (req, res) => {
-  // خواندن آدرس از متغیرهای محیطی در سمت سرور
   const livekitUrl = process.env.LIVEKIT_URL;
   
   if (!livekitUrl) {
@@ -36,11 +35,11 @@ app.get('/test', (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>اتاق تست مافیا</title>
+        <title>اتاق تست مافیا (چت و صدا)</title>
         <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
         <style>
-            body { font-family: Tahoma, sans-serif; background: #1e1e1e; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-            .box { background: #2d2d2d; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+            body { font-family: Tahoma, sans-serif; background: #1e1e1e; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; }
+            .box { background: #2d2d2d; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 15px;}
             input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; box-sizing: border-box; font-size: 16px; }
             button { padding: 12px; font-size: 16px; margin: 5px 0; border-radius: 8px; border: none; cursor: pointer; width: 100%; font-weight: bold; }
             #joinBtn { background: #28a745; color: white; }
@@ -51,7 +50,19 @@ app.get('/test', (req, res) => {
             .player.speaking { border-left-color: #28a745; background: #1e3a22; }
             .player.me { border-left-color: #007bff; }
             .status { font-size: 12px; color: #aaa; }
-            #roomUI { display: none; }
+            #roomUI { display: none; width: 100%; max-width: 400px; }
+
+            /* استایل‌های چت */
+            .chat-container { background: #2d2d2d; border-radius: 12px; display: flex; flex-direction: column; height: 350px; overflow: hidden; margin-bottom: 15px; }
+            .chat-header { background: #222; padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid #444; }
+            #chatMessages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+            .msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
+            .msg.others { background: #444; align-self: flex-start; border-top-right-radius: 0; }
+            .msg.mine { background: #007bff; align-self: flex-end; border-top-left-radius: 0; }
+            .msg .sender { font-size: 10px; opacity: 0.7; margin-bottom: 3px; display: block; }
+            .chat-input-area { display: flex; padding: 10px; background: #222; border-top: 1px solid #444; }
+            .chat-input-area input { margin: 0; border-radius: 8px 0 0 8px; border-left: none; }
+            .chat-input-area button { width: auto; margin: 0; border-radius: 0 8px 8px 0; background: #28a745; padding: 0 20px; }
         </style>
     </head>
     <body>
@@ -62,17 +73,27 @@ app.get('/test', (req, res) => {
             <button id="joinBtn">ورود به اتاق</button>
         </div>
 
-        <div class="box" id="roomUI">
-            <h3 style="text-align:center; margin-top:0;">👥 بازیکنان اتاق</h3>
-            <div id="playersList"></div>
-            <button id="micBtn">🎙️ قطع میکروفن</button>
-            <button id="leaveBtn">🚪 خروج از اتاق</button>
+        <div id="roomUI">
+            <div class="chat-container">
+                <div class="chat-header">💬 چت اتاق</div>
+                <div id="chatMessages"></div>
+                <div class="chat-input-area">
+                    <input type="text" id="chatInput" placeholder="پیام خود را بنویسید...">
+                    <button id="sendMsgBtn">ارسال</button>
+                </div>
+            </div>
+
+            <div class="box">
+                <h3 style="text-align:center; margin-top:0;">👥 بازیکنان اتاق</h3>
+                <div id="playersList"></div>
+                <button id="micBtn">🎙️ قطع میکروفن</button>
+                <button id="leaveBtn">🚪 خروج از اتاق</button>
+            </div>
         </div>
 
         <div id="audio-container"></div>
 
         <script>
-            // آدرس از سمت سرور تزریق می‌شود
             const LIVEKIT_URL = "${livekitUrl}";
             const room = new LivekitClient.Room();
             const loginUI = document.getElementById('loginUI');
@@ -82,7 +103,11 @@ app.get('/test', (req, res) => {
             const micBtn = document.getElementById('micBtn');
             const leaveBtn = document.getElementById('leaveBtn');
             const audioContainer = document.getElementById('audio-container');
+            const chatMessages = document.getElementById('chatMessages');
+            const chatInput = document.getElementById('chatInput');
+            const sendMsgBtn = document.getElementById('sendMsgBtn');
 
+            // پخش صدا
             room.on(LivekitClient.RoomEvent.TrackSubscribed, (track) => {
                 if (track.kind === 'audio') {
                     const el = track.attach();
@@ -90,6 +115,39 @@ app.get('/test', (req, res) => {
                 }
             });
 
+            // دریافت پیام چت
+            room.on(LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
+                const text = new TextDecoder().decode(payload);
+                addMessageToUI(participant.identity, text, false);
+            });
+
+            function addMessageToUI(sender, text, isMine) {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg ' + (isMine ? 'mine' : 'others');
+                msgDiv.innerHTML = '<span class="sender">' + sender + '</span>' + text;
+                chatMessages.appendChild(msgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight; // اسکرول خودکار به پایین
+            }
+
+            async function sendMessage() {
+                const text = chatInput.value.trim();
+                if (!text) return;
+                const encoder = new TextEncoder();
+                const payload = encoder.encode(text);
+                
+                // ارسال به همه افراد اتاق
+                await room.localParticipant.publishData(payload, LivekitClient.DataPacket_Kind.RELIABLE);
+                
+                addMessageToUI(room.localParticipant.identity, text, true);
+                chatInput.value = '';
+            }
+
+            sendMsgBtn.onclick = sendMessage;
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // آپدیت لیست بازیکنان
             function updatePlayers() {
                 playersList.innerHTML = '';
                 const localP = room.localParticipant;
@@ -113,6 +171,7 @@ app.get('/test', (req, res) => {
             room.on(LivekitClient.RoomEvent.TrackUnmuted, updatePlayers);
             room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, updatePlayers);
 
+            // ورود به اتاق
             joinBtn.onclick = async () => {
                 const user = document.getElementById('username').value.trim();
                 const rm = document.getElementById('roomname').value.trim();
@@ -144,9 +203,11 @@ app.get('/test', (req, res) => {
                 }
             };
 
+            // قطع/وصل میکروفن
             micBtn.onclick = async () => {
                 const isMicOn = room.localParticipant.isMicrophoneEnabled;
                 await room.localParticipant.setMicrophoneEnabled(!isMicOn);
+                
                 if (isMicOn) {
                     micBtn.classList.add('muted');
                     micBtn.innerText = '🔇 وصل کردن میکروفن';
@@ -157,12 +218,12 @@ app.get('/test', (req, res) => {
                 updatePlayers();
             };
 
+            // خروج از اتاق
             leaveBtn.onclick = async () => {
                 await room.disconnect();
                 loginUI.style.display = 'block';
                 roomUI.style.display = 'none';
-                leaveBtn.style.display = 'none';
-                micBtn.style.display = 'none';
+                chatMessages.innerHTML = '';
                 joinBtn.innerText = 'ورود به اتاق';
                 joinBtn.disabled = false;
                 audioContainer.innerHTML = '';
