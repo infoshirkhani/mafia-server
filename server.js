@@ -23,6 +23,13 @@ app.get('/token', async (req, res) => {
 });
 
 app.get('/test', (req, res) => {
+  // خواندن آدرس از متغیرهای محیطی در سمت سرور
+  const livekitUrl = process.env.LIVEKIT_URL;
+  
+  if (!livekitUrl) {
+    return res.status(500).send('خطا: LIVEKIT_URL در تنظیمات سرور تعریف نشده است.');
+  }
+
   res.send(`
     <!DOCTYPE html>
     <html lang="fa" dir="rtl">
@@ -58,7 +65,6 @@ app.get('/test', (req, res) => {
         <div class="box" id="roomUI">
             <h3 style="text-align:center; margin-top:0;">👥 بازیکنان اتاق</h3>
             <div id="playersList"></div>
-            
             <button id="micBtn">🎙️ قطع میکروفن</button>
             <button id="leaveBtn">🚪 خروج از اتاق</button>
         </div>
@@ -66,6 +72,8 @@ app.get('/test', (req, res) => {
         <div id="audio-container"></div>
 
         <script>
+            // آدرس از سمت سرور تزریق می‌شود
+            const LIVEKIT_URL = "${livekitUrl}";
             const room = new LivekitClient.Room();
             const loginUI = document.getElementById('loginUI');
             const roomUI = document.getElementById('roomUI');
@@ -74,7 +82,6 @@ app.get('/test', (req, res) => {
             const micBtn = document.getElementById('micBtn');
             const leaveBtn = document.getElementById('leaveBtn');
             const audioContainer = document.getElementById('audio-container');
-            let myIdentity = '';
 
             room.on(LivekitClient.RoomEvent.TrackSubscribed, (track) => {
                 if (track.kind === 'audio') {
@@ -113,14 +120,13 @@ app.get('/test', (req, res) => {
                 
                 joinBtn.innerText = 'در حال اتصال...';
                 joinBtn.disabled = true;
-                myIdentity = user;
 
                 try {
                     const res = await fetch('/token?room=' + encodeURIComponent(rm) + '&user=' + encodeURIComponent(user));
                     const data = await res.json();
                     if(data.error) throw new Error(data.error);
 
-                    await room.connect('${process.env.LIVEKIT_URL}', data.token);
+                    await room.connect(LIVEKIT_URL, data.token);
                     await room.localParticipant.setMicrophoneEnabled(true); 
                     
                     loginUI.style.display = 'none';
@@ -141,7 +147,6 @@ app.get('/test', (req, res) => {
             micBtn.onclick = async () => {
                 const isMicOn = room.localParticipant.isMicrophoneEnabled;
                 await room.localParticipant.setMicrophoneEnabled(!isMicOn);
-                
                 if (isMicOn) {
                     micBtn.classList.add('muted');
                     micBtn.innerText = '🔇 وصل کردن میکروفن';
