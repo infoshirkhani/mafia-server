@@ -53,55 +53,87 @@ app.get('/test', (req, res) => {
             #gameRoom { display: none; flex: 1; position: relative; background: radial-gradient(circle at center, #3e2e20 0%, #1a120b 100%); overflow: hidden; }
 
             /* نوار بالا */
-            .top-bar { position: absolute; top: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent); }
-            .room-name { font-weight: bold; color: #ffd700; font-size: 18px; }
-            
-            /* دکمه‌های بالای صفحه */
+            .top-bar { position: absolute; top: 0; width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: center; z-index: 10; }
+            .room-name { font-weight: bold; color: #ffd700; font-size: 18px; text-shadow: 1px 1px 3px #000; }
             .top-actions { display: flex; gap: 10px; }
-            .icon-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; }
+            .icon-btn { background: rgba(255,255,255,0.1); color: white; border: 1px solid #555; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; backdrop-filter: blur(5px); }
             .exit-btn { background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 20px; font-weight: bold; cursor: pointer; height: 40px; }
 
-            /* محیط میز و صندلی‌ها */
-            #seatsContainer { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); gap: 10px; padding: 60px 10px 100px 10px; align-content: center; justify-content: center; }
-            .seat { display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-            .avatar-box { width: 60px; height: 60px; border-radius: 50%; background: #333; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 24px; position: relative; transition: all 0.3s ease; }
+            /* --- محیط میز و صندلی‌ها --- */
+            #tableContainer { position: absolute; inset: 0; margin: auto; width: 100%; height: 100%; pointer-events: none; }
             
-            .avatar-box.speaking { border-color: #28a745; box-shadow: 0 0 15px #28a745; transform: scale(1.1); }
-            .avatar-box.muted { border-color: #dc3545; }
-            .avatar-box.muted::after { content: '🔇'; position: absolute; bottom: -5px; right: -5px; font-size: 14px; background: #111; border-radius: 50%; padding: 2px; }
-            .seat-name { font-size: 12px; margin-top: 5px; background: rgba(0,0,0,0.6); padding: 2px 8px; border-radius: 10px; max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-            .seat.empty .avatar-box { background: transparent; border: 2px dashed #444; color: #444; font-size: 12px; }
+            /* میز وسط */
+            .center-table { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 40px; color: rgba(255,215,0,0.2); filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+            
+            .seat { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.3s ease; }
+            
+            /* موقعیت صندلی‌ها (ریسپانسیو با درصد) */
+            .seat-0 { top: 12%; left: 50%; transform: translateX(-50%); } /* گرداننده */
+            
+            /* سمت چپ */
+            .seat-1 { top: 25%; left: 5%; }
+            .seat-2 { top: 37%; left: 3%; }
+            .seat-3 { top: 49%; left: 3%; }
+            .seat-4 { top: 61%; left: 3%; }
+            .seat-5 { top: 73%; left: 5%; }
+            
+            /* سمت راست */
+            .seat-6 { top: 25%; right: 5%; }
+            .seat-7 { top: 37%; right: 3%; }
+            .seat-8 { top: 49%; right: 3%; }
+            .seat-9 { top: 61%; right: 3%; }
+            .seat-10 { top: 73%; right: 5%; }
+            
+            /* پایین (اضافه شده برای ۱۶ نفر) */
+            .seat-11 { bottom: 12%; left: 20%; }
+            .seat-12 { bottom: 10%; left: 40%; }
+            .seat-13 { bottom: 10%; right: 40%; }
+            .seat-14 { bottom: 12%; right: 20%; }
 
-            /* نشانگر دست بلند شده */
-            .hand-indicator { display: none; position: absolute; top: -25px; right: 0; font-size: 24px; animation: wave 1s infinite ease-in-out; }
+            /* استایل آواتار */
+            .avatar-box { width: 50px; height: 50px; border-radius: 50%; background: #2a2a2a; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 20px; position: relative; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+            .seat.host .avatar-box { border-color: #ffd700; box-shadow: 0 0 15px #ffd700; }
+            
+            /* شماره صندلی */
+            .seat-number { position: absolute; top: -5px; left: -5px; background: #333; color: #aaa; width: 20px; height: 20px; border-radius: 50%; font-size: 11px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; font-weight: bold; }
+            .seat.host .seat-number { background: #ffd700; color: #000; }
+
+            /* وضعیت‌های میکروفن */
+            .avatar-box.speaking { border-color: #28a745; box-shadow: 0 0 15px #28a745; transform: scale(1.1); }
+            .avatar-box.muted { border-color: #dc3545; opacity: 0.8; }
+            .avatar-box.muted::after { content: '🔇'; position: absolute; bottom: -5px; right: -5px; font-size: 14px; background: #111; border-radius: 50%; padding: 2px; }
+            
+            .seat-name { font-size: 11px; margin-top: 4px; background: rgba(0,0,0,0.7); padding: 2px 6px; border-radius: 8px; max-width: 60px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+
+            /* نشانگر دست */
+            .hand-indicator { display: none; position: absolute; top: -20px; right: -10px; font-size: 22px; animation: wave 1s infinite ease-in-out; z-index: 5; }
             .seat.hand-raised .hand-indicator { display: block; }
             @keyframes wave { 0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(20deg); } 100% { transform: rotate(0deg); } }
 
             /* استیکرهای شناور */
-            .floating-reaction { position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); font-size: 30px; opacity: 1; animation: floatUp 1.5s ease-out forwards; pointer-events: none; z-index: 50; }
-            @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -80px) scale(1.5); } }
+            .floating-reaction { position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%); font-size: 26px; opacity: 1; animation: floatUp 1.5s ease-out forwards; pointer-events: none; z-index: 50; }
+            @keyframes floatUp { 0% { opacity: 1; transform: translate(-50%, 0) scale(1); } 100% { opacity: 0; transform: translate(-50%, -60px) scale(1.5); } }
 
-            /* پیام‌های شناور بالای صفحه */
+            /* پیام‌های شناور */
             #notificationArea { position: absolute; top: 60px; width: 100%; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 20; gap: 5px; }
-            .toast-msg { background: rgba(0, 0, 0, 0.85); color: #fff; padding: 8px 15px; border-radius: 20px; font-size: 14px; border: 1px solid #555; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; max-width: 90%; word-wrap: break-word; text-align: center; }
+            .toast-msg { background: rgba(0, 0, 0, 0.85); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; border: 1px solid #555; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; max-width: 90%; word-wrap: break-word; text-align: center; }
             .toast-msg.show { opacity: 1; transform: translateY(0); }
             .toast-msg.hide { opacity: 0; transform: translateY(-20px); }
-            .toast-msg .sender-name { color: #ffd700; font-weight: bold; font-size: 12px; }
+            .toast-msg .sender-name { color: #ffd700; font-weight: bold; font-size: 11px; }
             .toast-msg .check-icon { color: #28a745; font-weight: bold; }
 
-            /* --- نوار پایین (کنترل‌ها) --- */
-            .bottom-bar { position: absolute; bottom: 0; width: 100%; padding: 20px 10px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 10; }
+            /* --- نوار پایین --- */
+            .bottom-bar { position: absolute; bottom: 0; width: 100%; padding: 15px 10px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); z-index: 10; }
             .action-btn { width: 45px; height: 45px; border-radius: 50%; border: none; background: rgba(255,255,255,0.1); color: #fff; font-size: 20px; cursor: pointer; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); transition: all 0.2s; }
             .action-btn:active { transform: scale(0.9); }
             .action-btn.active { background: rgba(255, 215, 0, 0.3); border: 1px solid #ffd700; }
             
             .mic-btn-container { position: relative; }
-            .mic-btn { width: 75px; height: 75px; border-radius: 50%; border: 4px solid #ffd700; background: #222; color: #fff; font-size: 30px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); transition: all 0.2s ease; }
-            .mic-btn.muted { border-color: #dc3545; box-shadow: 0 0 20px rgba(220, 53, 69, 0.3); }
-            
+            .mic-btn { width: 70px; height: 70px; border-radius: 50%; border: 4px solid #28a745; background: #222; color: #fff; font-size: 28px; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 20px rgba(40, 167, 69, 0.4); transition: all 0.2s ease; }
+            .mic-btn.muted { border-color: #dc3545; box-shadow: 0 0 20px rgba(220, 53, 69, 0.4); }
             #audio-container { display: none; }
 
-            /* --- پنجره ارسال پیام (مودال) --- */
+            /* مودال چت */
             #chatModal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(3px); }
             .chat-modal-content { background: #2a2a2a; width: 100%; max-width: 400px; border-radius: 16px; padding: 20px; border: 1px solid #444; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 15px; }
             .chat-modal-content h3 { text-align: center; color: #ffd700; font-size: 18px; }
@@ -131,15 +163,19 @@ app.get('/test', (req, res) => {
                 </div>
             </div>
 
-            <div id="seatsContainer"></div>
             <div id="notificationArea"></div>
+
+            <div id="tableContainer">
+                <div class="center-table">⚙️</div>
+                <!-- صندلی ها با جاوااسکریپت اینجا ساخته می شوند -->
+            </div>
 
             <div class="bottom-bar">
                 <button class="action-btn" id="likeBtn">👍</button>
                 <button class="action-btn" id="dislikeBtn">👎</button>
                 
                 <div class="mic-btn-container">
-                    <button class="mic-btn" id="micBtn">🎙️</button>
+                    <button class="mic-btn muted" id="micBtn">🔇</button>
                 </div>
                 
                 <button class="action-btn" id="raiseHandBtn">✋</button>
@@ -147,7 +183,6 @@ app.get('/test', (req, res) => {
             </div>
         </div>
 
-        <!-- پنجره ارسال پیام -->
         <div id="chatModal">
             <div class="chat-modal-content">
                 <h3>ارسال پیام به اتاق</h3>
@@ -167,44 +202,56 @@ app.get('/test', (req, res) => {
             
             const loginUI = document.getElementById('loginUI');
             const gameRoom = document.getElementById('gameRoom');
-            const seatsContainer = document.getElementById('seatsContainer');
+            const tableContainer = document.getElementById('tableContainer');
             const notificationArea = document.getElementById('notificationArea');
             const micBtn = document.getElementById('micBtn');
             const raiseHandBtn = document.getElementById('raiseHandBtn');
             const likeBtn = document.getElementById('likeBtn');
             const dislikeBtn = document.getElementById('dislikeBtn');
             
-            // المان‌های چت جدید
             const chatModal = document.getElementById('chatModal');
             const openChatBtn = document.getElementById('openChatBtn');
             const cancelModalBtn = document.getElementById('cancelModalBtn');
             const sendModalMsgBtn = document.getElementById('sendModalMsgBtn');
             const modalChatInput = document.getElementById('modalChatInput');
             
-            let totalSeats = 16;
             let localUser = null;
             let isHandRaised = false;
 
-            // ساخت صندلی‌ها
+            // ساخت صندلی‌ها (۱ گرداننده + ۱۴ بازیکن = ۱۵ صندلی)
             function createSeats() {
-                seatsContainer.innerHTML = '';
-                for (let i = 1; i <= totalSeats; i++) {
+                // صندلی گرداننده (شماره 0)
+                const hostSeat = document.createElement('div');
+                hostSeat.className = 'seat seat-0 host';
+                hostSeat.id = 'seat-0';
+                hostSeat.innerHTML = \`
+                    <div class="avatar-box">
+                        👑
+                        <div class="seat-number">H</div>
+                        <div class="hand-indicator">✋</div>
+                    </div>
+                    <div class="seat-name">گرداننده</div>
+                \`;
+                tableContainer.appendChild(hostSeat);
+
+                // صندلی بازیکنان (شماره 1 تا 14)
+                for (let i = 1; i <= 14; i++) {
                     const seat = document.createElement('div');
-                    seat.className = 'seat empty';
+                    seat.className = 'seat seat-' + i;
                     seat.id = 'seat-' + i;
                     seat.innerHTML = \`
                         <div class="avatar-box">
                             💺
+                            <div class="seat-number">\${i}</div>
                             <div class="hand-indicator">✋</div>
                         </div>
                         <div class="seat-name">صندلی \${i}</div>
                     \`;
-                    seatsContainer.appendChild(seat);
+                    tableContainer.appendChild(seat);
                 }
             }
             createSeats();
 
-            // نمایش پیام شناور (۱۵ ثانیه)
             function showNotification(text, sender = null, isSystem = false) {
                 const toast = document.createElement('div');
                 toast.className = 'toast-msg';
@@ -222,19 +269,30 @@ app.get('/test', (req, res) => {
                 }, 15000);
             }
 
-            function assignSeat(identity, isMuted) {
+            // پیدا کردن صندلی خالی (اول گرداننده، بعد بازیکنان)
+            function assignSeat(identity, isMuted, isHost = false) {
                 let assignedSeat = null;
-                const seats = document.querySelectorAll('.seat');
-                for (let seat of seats) {
-                    if (seat.classList.contains('empty') || seat.querySelector('.seat-name').innerText === identity) {
-                        assignedSeat = seat; break;
+                
+                // اگر گرداننده است، صندلی 0
+                if (isHost) {
+                    assignedSeat = document.getElementById('seat-0');
+                } else {
+                    // پیدا کردن اولین صندلی خالی از بین 1 تا 14
+                    for (let i = 1; i <= 14; i++) {
+                        const seat = document.getElementById('seat-' + i);
+                        if (!seat.hasAttribute('data-identity') || seat.getAttribute('data-identity') === identity) {
+                            assignedSeat = seat; 
+                            break;
+                        }
                     }
                 }
+
                 if (assignedSeat) {
                     assignedSeat.classList.remove('empty');
-                    assignedSeat.querySelector('.seat-name').innerText = identity;
-                    assignedSeat.querySelector('.avatar-box').childNodes[0].nodeValue = '👤';
                     assignedSeat.setAttribute('data-identity', identity);
+                    assignedSeat.querySelector('.seat-name').innerText = identity;
+                    // تغییر شکل آواتار از صندلی خالی به کاربر (با حرف اول اسم)
+                    assignedSeat.querySelector('.avatar-box').childNodes[0].nodeValue = identity.charAt(0).toUpperCase();
                     updateSeatMicState(identity, isMuted);
                     return assignedSeat;
                 }
@@ -272,18 +330,24 @@ app.get('/test', (req, res) => {
                 if (track.kind === 'audio') document.getElementById('audio-container').appendChild(track.attach());
             });
 
+            // وقتی بازیکن جدید وارد می‌شود
             room.on(LivekitClient.RoomEvent.ParticipantConnected, (participant) => {
-                assignSeat(participant.identity, !participant.isMicrophoneEnabled);
+                // اگر هیچ‌کس گرداننده نبود، این نفر گرداننده می‌شود
+                const hostSeat = document.getElementById('seat-0');
+                const isHost = !hostSeat.hasAttribute('data-identity');
+                
+                assignSeat(participant.identity, !participant.isMicrophoneEnabled, isHost);
                 showNotification(\`وارد اتاق شد\`, participant.identity, true);
             });
 
             room.on(LivekitClient.RoomEvent.ParticipantDisconnected, (participant) => {
                 const seat = document.querySelector(\`.seat[data-identity="\${participant.identity}"]\`);
                 if (seat) {
+                    const seatNum = seat.id.split('-')[1];
                     seat.classList.add('empty');
                     seat.classList.remove('hand-raised');
-                    seat.querySelector('.seat-name').innerText = \`صندلی \${seat.id.split('-')[1]}\`;
-                    seat.querySelector('.avatar-box').childNodes[0].nodeValue = '💺';
+                    seat.querySelector('.seat-name').innerText = seatNum === '0' ? 'گرداننده' : \`صندلی \${seatNum}\`;
+                    seat.querySelector('.avatar-box').childNodes[0].nodeValue = seatNum === '0' ? '👑' : '💺';
                     seat.querySelector('.avatar-box').className = 'avatar-box';
                     seat.removeAttribute('data-identity');
                 }
@@ -299,10 +363,8 @@ app.get('/test', (req, res) => {
 
             room.on(LivekitClient.RoomEvent.ActiveSpeakersChanged, updateSpeakingState);
 
-            // دریافت داده‌ها
             room.on(LivekitClient.RoomEvent.DataReceived, (payload, participant) => {
                 const data = JSON.parse(new TextDecoder().decode(payload));
-                
                 if (data.type === 'chat') {
                     showNotification(data.text, participant.identity, false);
                 } 
@@ -349,8 +411,12 @@ app.get('/test', (req, res) => {
                     gameRoom.style.display = 'flex';
                     document.getElementById('displayRoomName').innerText = rm;
                     
-                    assignSeat(user, true);
-                    showNotification('شما وارد اتاق شدید', user, true);
+                    // بررسی اینکه آیا کاربر اول است (گرداننده)
+                    const hostSeat = document.getElementById('seat-0');
+                    const isHost = !hostSeat.hasAttribute('data-identity');
+                    
+                    assignSeat(user, true, isHost);
+                    showNotification(isHost ? 'شما به عنوان گرداننده وارد شدید' : 'شما وارد اتاق شدید', user, true);
                     
                 } catch (e) {
                     alert('خطا: ' + e.message);
@@ -397,28 +463,22 @@ app.get('/test', (req, res) => {
                 showReaction(localUser, '👎');
             };
 
-            // --- منطق چت مودالی ---
             openChatBtn.onclick = () => {
                 chatModal.style.display = 'flex';
                 modalChatInput.value = '';
                 modalChatInput.focus();
             };
 
-            cancelModalBtn.onclick = () => {
-                chatModal.style.display = 'none';
-            };
+            cancelModalBtn.onclick = () => { chatModal.style.display = 'none'; };
 
             sendModalMsgBtn.onclick = () => {
                 const text = modalChatInput.value.trim();
                 if (!text) return;
-                
                 sendData({ type: 'chat', text: text });
                 showNotification(text, localUser, false);
-                
                 chatModal.style.display = 'none';
             };
 
-            // بستن مودال با کلیک روی پس‌زمینه
             chatModal.onclick = (e) => {
                 if (e.target === chatModal) chatModal.style.display = 'none';
             };
