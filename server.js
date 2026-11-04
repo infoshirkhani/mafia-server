@@ -35,12 +35,12 @@ app.get('/test', (req, res) => {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>اتاق تست مافیا (چت و صدا)</title>
+        <title>اتاق تست مافیا</title>
         <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
         <style>
             body { font-family: Tahoma, sans-serif; background: #1e1e1e; color: #fff; padding: 20px; display: flex; flex-direction: column; align-items: center; margin: 0; min-height: 100vh; }
             .box { background: #2d2d2d; padding: 20px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 15px;}
-            input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; box-sizing: border-box; font-size: 16px; }
+            input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; box-sizing: border-box; font-size: 16px; }
             button { padding: 12px; font-size: 16px; margin: 5px 0; border-radius: 8px; border: none; cursor: pointer; width: 100%; font-weight: bold; }
             #joinBtn { background: #28a745; color: white; }
             #leaveBtn { background: #dc3545; color: white; display: none; }
@@ -53,7 +53,7 @@ app.get('/test', (req, res) => {
             #roomUI { display: none; width: 100%; max-width: 400px; }
 
             /* استایل‌های چت */
-            .chat-container { background: #2d2d2d; border-radius: 12px; display: flex; flex-direction: column; height: 350px; overflow: hidden; margin-bottom: 15px; }
+            .chat-container { background: #2d2d2d; border-radius: 12px; display: flex; flex-direction: column; height: 300px; overflow: hidden; margin-bottom: 15px; }
             .chat-header { background: #222; padding: 10px; text-align: center; font-weight: bold; border-bottom: 1px solid #444; }
             #chatMessages { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
             .msg { max-width: 80%; padding: 8px 12px; border-radius: 8px; font-size: 14px; line-height: 1.4; word-wrap: break-word; }
@@ -86,6 +86,7 @@ app.get('/test', (req, res) => {
             <div class="box">
                 <h3 style="text-align:center; margin-top:0;">👥 بازیکنان اتاق</h3>
                 <div id="playersList"></div>
+                
                 <button id="micBtn">🎙️ قطع میکروفن</button>
                 <button id="leaveBtn">🚪 خروج از اتاق</button>
             </div>
@@ -126,7 +127,7 @@ app.get('/test', (req, res) => {
                 msgDiv.className = 'msg ' + (isMine ? 'mine' : 'others');
                 msgDiv.innerHTML = '<span class="sender">' + sender + '</span>' + text;
                 chatMessages.appendChild(msgDiv);
-                chatMessages.scrollTop = chatMessages.scrollHeight; // اسکرول خودکار به پایین
+                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
 
             async function sendMessage() {
@@ -134,10 +135,7 @@ app.get('/test', (req, res) => {
                 if (!text) return;
                 const encoder = new TextEncoder();
                 const payload = encoder.encode(text);
-                
-                // ارسال به همه افراد اتاق
                 await room.localParticipant.publishData(payload, LivekitClient.DataPacket_Kind.RELIABLE);
-                
                 addMessageToUI(room.localParticipant.identity, text, true);
                 chatInput.value = '';
             }
