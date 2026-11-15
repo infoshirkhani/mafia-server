@@ -1,546 +1,1113 @@
+
 <!DOCTYPE html>
-<html lang="fa" dir="ltr">
+<html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>اتاق بازی مافیا | نسخه %%VERSION%%</title>
-    <script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', Tahoma, sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
-        body { background: #0a0a0a; color: #fff; overflow: hidden; height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090806">
+<title>BIG GAIN | Mafia Room</title>
 
-        /* --- صفحه ورود --- */
-        #loginUI { position: absolute; inset: 0; background: rgba(0,0,0,0.95); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; }
-        #loginUI .box { background: #1e1e1e; padding: 30px; border-radius: 16px; width: 100%; max-width: 350px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid #333; position: relative; }
-        #loginUI input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; font-size: 16px; text-align: center; }
-        #loginUI button { width: 100%; padding: 15px; margin-top: 15px; border-radius: 8px; border: none; background: #28a745; color: #fff; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .version-tag { position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); color: #666; font-size: 12px; direction: ltr; }
+<script src="https://cdn.jsdelivr.net/npm/livekit-client/dist/livekit-client.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-        /* --- محیط بازی --- */
-        #gameRoom { display: none; flex: 1; position: relative; background: #1a1a1a; overflow: hidden; }
-        #gameRoom::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80') center/cover; opacity: 0.3; z-index: 1; }
-
-        /* نوار بالا */
-        .top-bar { position: absolute; top: 0; width: 100%; padding: 15px; padding-top: max(15px, env(safe-area-inset-top)); display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; direction: ltr; }
-        .top-left-actions { display: flex; gap: 10px; align-items: center; }
-        .exit-btn { background: #e81e5a; color: white; border: none; padding: 0 20px; border-radius: 20px; font-weight: bold; cursor: pointer; height: 40px; font-size: 14px; display: flex; align-items: center; box-shadow: 0 4px 10px rgba(232,30,90,0.4); direction: rtl; }
-        .icon-btn { background: rgba(40,40,40,0.8); color: white; border: 1px solid #555; width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 18px; cursor: pointer; backdrop-filter: blur(5px); }
-        .room-info { display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px; }
-        .room-name { font-weight: bold; color: #ffd700; font-size: 16px; text-shadow: 1px 1px 3px #000; direction: rtl; }
-        .game-version { color: #888; font-size: 10px; direction: ltr; }
-
-        /* --- محیط میز و صندلی‌ها --- */
-        #tableContainer { position: absolute; inset: 0; margin: auto; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
-        .center-table { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 50px; color: rgba(255,215,0,0.1); filter: drop-shadow(0 0 15px rgba(255,215,0,0.2)); }
-        
-        /* استایل صندلی‌ها */
-        .seat { position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: auto; transition: all 0.4s ease; }
-        .seat.empty { opacity: 0; pointer-events: none; transform: scale(0.5); }
-
-        .seat-1 { top: 12%; left: 12%; }
-        .seat-3 { top: 22%; left: 6%; }
-        .seat-5 { top: 32%; left: 2%; }
-        .seat-7 { top: 42%; left: 1%; }
-        .seat-9 { top: 52%; left: 1%; }
-        .seat-11 { top: 62%; left: 2%; }
-        .seat-13 { top: 72%; left: 6%; }
-        .seat-15 { top: 82%; left: 12%; }
-        
-        .seat-2 { top: 12%; right: 12%; }
-        .seat-4 { top: 22%; right: 6%; }
-        .seat-6 { top: 32%; right: 2%; }
-        .seat-8 { top: 42%; right: 1%; }
-        .seat-10 { top: 52%; right: 1%; }
-        .seat-12 { top: 62%; right: 2%; }
-        .seat-14 { top: 72%; right: 6%; }
-        .seat-16 { top: 82%; right: 12%; }
-
-        /* آواتار و شماره */
-        .avatar-box { width: 55px; height: 55px; border-radius: 50%; background: #222; border: 3px solid #555; display: flex; justify-content: center; align-items: center; font-size: 22px; position: relative; box-shadow: 0 6px 12px rgba(0,0,0,0.6); transition: all 0.3s; }
-        .seat-number { position: absolute; top: -5px; left: -5px; background: #333; color: #aaa; width: 22px; height: 22px; border-radius: 50%; font-size: 11px; display: flex; justify-content: center; align-items: center; border: 1px solid #555; font-weight: bold; z-index: 3; }
-
-        /* 🌟 وضعیت میکروفن باز (زرد) */
-        .avatar-box.mic-open { border-color: #ffd700; box-shadow: 0 0 20px #ffd700; transform: scale(1.05); }
-        
-        .seat-name { font-size: 11px; margin-top: 5px; background: #000; padding: 2px 8px; border-radius: 6px; max-width: 75px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid #333; text-align: center; direction: rtl; }
-
-        /* نشانگر دست */
-        .hand-indicator { display: none; position: absolute; top: -20px; right: -15px; font-size: 24px; animation: wave 1s infinite ease-in-out; z-index: 5; filter: drop-shadow(0 0 5px #ffd700); }
-        .seat.hand-raised .hand-indicator { display: block; }
-        @keyframes wave { 0% { transform: rotate(0deg); } 25% { transform: rotate(20deg); } 50% { transform: rotate(0deg); } 75% { transform: rotate(20deg); } 100% { transform: rotate(0deg); } }
-
-        /* پیام‌های شناور */
-        #notificationArea { position: absolute; top: max(70px, env(safe-area-inset-top)); width: 100%; display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 20; gap: 5px; }
-        .toast-msg { background: rgba(0, 0, 0, 0.9); color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 13px; border: 1px solid #444; display: flex; align-items: center; gap: 8px; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; max-width: 90%; word-wrap: break-word; text-align: center; direction: rtl; }
-        .toast-msg.show { opacity: 1; transform: translateY(0); }
-        .toast-msg.hide { opacity: 0; transform: translateY(-20px); }
-        .toast-msg .sender-name { color: #ffd700; font-weight: bold; font-size: 11px; }
-
-        /* --- نوار پایین و میکروفن --- */
-        .bottom-bar { position: absolute; bottom: 0; width: 100%; padding: 0 20px; padding-bottom: max(10px, env(safe-area-inset-bottom)); display: flex; justify-content: space-between; align-items: flex-end; z-index: 10; direction: ltr; }
-        
-        .action-btn { width: 50px; height: 50px; border-radius: 50%; border: none; background: rgba(40,40,40,0.8); color: #fff; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); transition: all 0.2s; border: 1px solid #333; margin-bottom: 25px;}
-        .action-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
-        .action-btn.active { background: rgba(255, 215, 0, 0.3); border-color: #ffd700; }
-
-        .mic-btn-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; }
-        .mic-btn-container { position: relative; width: 90px; height: 90px; display: flex; justify-content: center; align-items: center; }
-        
-        .timer-ring { position: absolute; top: 0; left: 0; width: 90px; height: 90px; transform: rotate(-90deg); pointer-events: none; }
-        .timer-circle { fill: none; stroke: #ffd700; stroke-width: 5; stroke-linecap: round; stroke-dasharray: 251.2; stroke-dashoffset: 0; transition: stroke-dashoffset 0.1s linear, stroke 0.3s; }
-        
-        .mic-btn { width: 70px; height: 70px; border-radius: 50%; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; transition: all 0.2s ease; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5); z-index: 2; font-size: 30px;}
-        
-        .mic-btn.closed { background: #dc3545; color: white; }
-        .mic-btn.closed::after { content: ''; position: absolute; width: 4px; height: 80%; background: white; border-radius: 2px; transform: rotate(-45deg); }
-        .mic-btn.open { background: #28a745; color: white; border: 2px solid #4cd964; }
-        .mic-btn.disconnected { background: #555; color: white; border: 2px dashed #777; }
-        .mic-btn.disconnected::after { display: none; }
-        .mic-btn.disconnected .mic-icon { display: none; }
-        .mic-btn.disconnected::before { content: '🛜'; font-size: 28px; opacity: 0.8; }
-        .mic-btn.cooldown { background: #333; color: #aaa; cursor: not-allowed; font-size: 24px; font-weight: bold; }
-        .mic-btn.cooldown::after { display: none; }
-
-        /* 🌟 نوار اکولایزر */
-        #audio-visualizer { width: 70px; height: 6px; background: #333; border-radius: 3px; margin-top: 8px; overflow: hidden; position: relative; z-index: 3; display: none;}
-        #audio-visualizer-bar { width: 0%; height: 100%; background: #28a745; transition: width 0.05s linear; border-radius: 3px; box-shadow: 0 0 10px #28a745; }
-
-        #audio-container { display: none; }
-
-        /* مودال چت */
-        #chatModal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; display: none; justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(4px); }
-        .chat-modal-content { background: #1e1e1e; width: 100%; max-width: 400px; border-radius: 16px; padding: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.8); display: flex; flex-direction: column; gap: 15px; direction: rtl; }
-        .chat-modal-content h3 { text-align: center; color: #ffd700; font-size: 18px; }
-        .chat-modal-content textarea { width: 100%; height: 100px; padding: 12px; border-radius: 8px; border: 1px solid #444; background: #111; color: #fff; font-size: 16px; resize: none; outline: none; font-family: inherit; }
-        .chat-modal-actions { display: flex; gap: 10px; }
-        .chat-modal-actions button { flex: 1; padding: 14px; border-radius: 8px; border: none; font-size: 16px; font-weight: bold; cursor: pointer; }
-        #sendModalMsgBtn { background: #28a745; color: #fff; }
-        #cancelModalBtn { background: #333; color: #fff; }
-    </style>
+<style>
+:root{
+ --bg:#080807;
+ --panel:#15130f;
+ --panel2:#201b13;
+ --gold:#d6ad59;
+ --gold2:#f3d58c;
+ --gold-dark:#79551e;
+ --text:#f5f0e5;
+ --muted:#9b9487;
+ --green:#38a56b;
+ --red:#b74343;
+ --border:rgba(214,173,89,.35);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden}
+body{
+ background:var(--bg);
+ color:var(--text);
+ font-family:Vazirmatn,Tahoma,sans-serif;
+}
+button,input,textarea{font:inherit}
+button{cursor:pointer;color:inherit}
+button:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,textarea:focus-visible{
+ outline:2px solid var(--gold2);outline-offset:3px
+}
+.app{
+ position:relative;
+ width:100%;
+ height:100dvh;
+ min-height:500px;
+ overflow:hidden;
+ background:
+ radial-gradient(ellipse at 50% 30%,rgba(112,75,27,.22),transparent 55%),
+ linear-gradient(145deg,#080807,#15110b 55%,#070706);
+}
+.screen{position:absolute;inset:0;display:none;overflow:hidden}
+.screen.active{display:block}
+.gold{color:var(--gold2)}
+.muted{color:var(--muted)}
+.panel{
+ background:linear-gradient(145deg,rgba(37,31,21,.97),rgba(12,11,9,.98));
+ border:1px solid var(--border);
+ border-radius:15px;
+ box-shadow:0 12px 35px #0009,inset 0 1px #ffffff08;
+}
+.gold-btn{
+ border:1px solid #f0d18a;
+ border-radius:9px;
+ padding:12px 20px;
+ color:#170f05;
+ background:linear-gradient(135deg,#f1d48b,#a9782b);
+ font-weight:900;
+ box-shadow:0 5px 18px #bd8a3033;
+}
+.dark-btn{
+ background:#171510;border:1px solid var(--border);
+ border-radius:9px;padding:10px 16px
+}
+.red-btn{background:#641d1d;border:1px solid #b44c4c;border-radius:9px;padding:10px 16px}
+.eyebrow{font-size:10px;letter-spacing:3px;color:var(--gold);font-weight:800}
+.brand{
+ font-weight:900;letter-spacing:4px;
+ color:var(--gold2);
+ text-shadow:0 0 22px #d6ad5933;
+}
+.brand small{display:block;font-size:9px;letter-spacing:5px;color:#a58a58;text-align:center}
+.page-heading{
+ text-align:center;color:var(--gold2);
+ font-size:20px;font-weight:900;
+}
+.gold-line{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.field{
+ width:100%;padding:14px 15px;
+ border:1px solid #57472c;border-radius:9px;
+ background:#090908;color:#fff;outline:none;
+ direction:rtl;text-align:right;
+}
+.field::placeholder{color:#817866}
+.status-pill{
+ display:inline-flex;align-items:center;gap:7px;
+ padding:6px 12px;border:1px solid var(--border);
+ border-radius:30px;background:#0d0c09;
+ font-size:11px;color:var(--gold2)
+}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+/* Login */
+#loginUI{
+ position:absolute;inset:0;z-index:30;
+ display:flex;align-items:center;justify-content:center;
+ padding:22px;
+ background:
+ radial-gradient(ellipse at 50% 25%,#49351b55,transparent 45%),
+ linear-gradient(140deg,#080807,#17120b,#080807);
+}
+.login-box{
+ width:100%;max-width:430px;padding:30px 24px;
+ text-align:center;position:relative;
+}
+.login-emblem{
+ width:90px;height:90px;margin:0 auto 20px;
+ border-radius:50%;border:2px double var(--gold);
+ display:grid;place-items:center;
+ background:radial-gradient(circle,#61451d,#110d08 72%);
+ box-shadow:0 0 35px #bd8a3030,inset 0 0 20px #000;
+ color:var(--gold2);font-size:36px;
+}
+.login-box h1{font-size:25px;margin-bottom:5px}
+.login-box .sub{color:var(--muted);font-size:12px;margin-bottom:26px}
+.login-box label{display:block;text-align:right;color:var(--gold2);font-size:12px;margin:13px 2px 7px}
+.login-box .gold-btn{width:100%;margin-top:20px}
+.login-footer{font-size:10px;color:#716b60;margin-top:25px}
+.login-error{color:#ff8a8a;font-size:12px;margin-top:12px;min-height:18px}
+/* Room */
+#gameRoom{background:transparent}
+.room-top{
+ position:absolute;top:0;left:0;right:0;
+ padding:max(15px,env(safe-area-inset-top)) 17px 15px;
+ display:flex;align-items:center;justify-content:space-between;
+ z-index:10;
+ background:linear-gradient(#050504ee,transparent);
+}
+.room-title{font-weight:900;color:var(--gold2);font-size:17px}
+.room-subtitle{font-size:10px;color:var(--muted);margin-top:3px}
+.top-actions{display:flex;gap:8px;align-items:center}
+.circle-btn{
+ width:42px;height:42px;border-radius:50%;
+ border:1px solid var(--border);background:#15130edc;
+ display:grid;place-items:center;font-size:17px;
+}
+.exit-btn{border-color:#8e3737;color:#ffaaaa}
+#tableContainer{
+ position:absolute;inset:0;width:100%;height:100%;
+ z-index:2;pointer-events:none;
+}
+.table-backdrop{
+ position:absolute;left:50%;top:50%;
+ width:min(66vw,410px);height:min(48vw,290px);
+ transform:translate(-50%,-50%);
+ border-radius:50%;
+ border:12px ridge #785321;
+ background:
+ radial-gradient(ellipse,#4a3019,#201307 65%,#090806);
+ box-shadow:0 0 45px #000,inset 0 0 30px #000;
+}
+.table-emblem{
+ position:absolute;left:50%;top:50%;
+ transform:translate(-50%,-50%);
+ width:105px;height:105px;border-radius:50%;
+ border:5px double var(--gold);
+ background:radial-gradient(circle,#64491e,#100c06);
+ display:grid;place-items:center;
+ color:var(--gold2);font-size:37px;
+ box-shadow:0 0 25px #b88b3b33;
+}
+.table-caption{
+ position:absolute;left:50%;top:calc(50% + 76px);
+ transform:translateX(-50%);
+ white-space:nowrap;color:#b89a60;
+ font-size:10px;letter-spacing:2px;
+}
+.seat{
+ position:absolute;display:flex;flex-direction:column;
+ align-items:center;justify-content:center;
+ pointer-events:auto;transition:.3s;
+}
+.seat.empty{opacity:0;pointer-events:none;transform:scale(.6)}
+.seat-1{top:13%;left:12%}.seat-2{top:13%;right:12%}
+.seat-3{top:24%;left:5%}.seat-4{top:24%;right:5%}
+.seat-5{top:36%;left:1%}.seat-6{top:36%;right:1%}
+.seat-7{top:49%;left:1%}.seat-8{top:49%;right:1%}
+.seat-9{top:62%;left:1%}.seat-10{top:62%;right:1%}
+.seat-11{top:74%;left:5%}.seat-12{top:74%;right:5%}
+.seat-13{top:83%;left:15%}.seat-14{top:83%;right:15%}
+.seat-15{top:83%;left:35%}.seat-16{top:83%;right:35%}
+.avatar-box{
+ width:55px;height:55px;border-radius:50%;
+ background:radial-gradient(circle,#5d4930,#100e0b);
+ border:2px solid #84662e;
+ display:grid;place-items:center;
+ font-size:21px;position:relative;
+ box-shadow:0 6px 15px #000a;
+}
+.avatar-box.mic-open{
+ border-color:#f3d58c;
+ box-shadow:0 0 17px #d6ad59;
+}
+.seat-number{
+ position:absolute;top:-5px;left:-6px;
+ width:20px;height:20px;border-radius:50%;
+ background:#282117;color:var(--gold2);
+ border:1px solid var(--gold-dark);
+ display:grid;place-items:center;font-size:10px;
+}
+.seat-name{
+ margin-top:5px;max-width:82px;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+ background:#080807eF;border:1px solid #514127;
+ border-radius:5px;padding:3px 7px;
+ font-size:10px;text-align:center;
+}
+.hand-indicator{
+ display:none;position:absolute;top:-22px;right:-10px;
+ font-size:20px;filter:drop-shadow(0 0 5px var(--gold));
+}
+.seat.hand-raised .hand-indicator{display:block}
+.room-bottom{
+ position:absolute;bottom:0;left:0;right:0;
+ padding:15px 20px max(17px,env(safe-area-inset-bottom));
+ display:flex;align-items:center;justify-content:space-between;
+ z-index:12;background:linear-gradient(transparent,#050504ee);
+}
+.action-btn{
+ width:47px;height:47px;border-radius:50%;
+ border:1px solid var(--border);background:#17140f;
+ color:var(--gold2);font-size:20px;
+ display:grid;place-items:center;
+}
+.action-btn.active{background:#5c461e;border-color:var(--gold2)}
+.mic-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.mic-circle{
+ width:78px;height:78px;border-radius:50%;
+ border:3px solid #82602b;background:#3c1717;
+ color:white;font-size:28px;
+ display:grid;place-items:center;position:relative;
+ box-shadow:0 0 25px #000;
+}
+.mic-circle.open{background:#15512d;border-color:#67bc7b}
+.mic-circle.disconnected{background:#444}
+.mic-circle.cooldown{background:#3a3030}
+.mic-label{font-size:10px;color:var(--muted)}
+.timer-ring{position:absolute;inset:-9px;width:96px;height:96px;transform:rotate(-90deg);pointer-events:none}
+.timer-circle{fill:none;stroke:var(--gold);stroke-width:3;stroke-dasharray:251.2;stroke-dashoffset:0}
+#audio-visualizer{width:65px;height:5px;background:#333;border-radius:5px;overflow:hidden;display:none}
+#audio-visualizer-bar{width:0;height:100%;background:#69d78d}
+/* Game state */
+.game-state{
+ position:absolute;top:93px;left:50%;transform:translateX(-50%);
+ z-index:9;white-space:nowrap;text-align:center;
+ padding:9px 17px;border-radius:25px;
+ background:#090806df;border:1px solid var(--border);
+ font-size:11px;color:var(--gold2);
+}
+.game-state.started{border-color:#4e9c65;color:#9be6aa}
+.game-state strong{font-weight:900}
+#notificationArea{
+ position:absolute;top:145px;left:0;right:0;
+ display:flex;flex-direction:column;align-items:center;
+ gap:6px;z-index:25;pointer-events:none;
+}
+.toast-msg{
+ max-width:90%;padding:9px 15px;border-radius:9px;
+ background:#11100d;border:1px solid var(--border);
+ font-size:12px;text-align:center;
+ opacity:0;transform:translateY(-10px);transition:.25s;
+ box-shadow:0 6px 20px #0008;
+}
+.toast-msg.show{opacity:1;transform:translateY(0)}
+.toast-msg .sender-name{color:var(--gold2);font-weight:900}
+/* Chat */
+#chatModal{
+ position:fixed;inset:0;z-index:50;
+ display:none;align-items:center;justify-content:center;
+ padding:20px;background:#000c;backdrop-filter:blur(8px);
+}
+.chat-box{width:100%;max-width:420px;padding:22px}
+.chat-box h3{text-align:center;color:var(--gold2);margin-bottom:16px}
+.chat-box textarea{height:120px;resize:vertical}
+.chat-actions{display:flex;gap:10px;margin-top:13px}
+.chat-actions button{flex:1}
+#audio-container{display:none}
+@media(max-width:600px){
+ .table-backdrop{width:64vw;height:43vw;border-width:8px}
+ .table-emblem{width:78px;height:78px;font-size:29px}
+ .avatar-box{width:45px;height:45px;font-size:18px}
+ .seat-name{font-size:9px;max-width:65px}
+ .seat-1,.seat-2{top:16%}
+ .seat-3,.seat-4{top:27%}
+ .seat-13,.seat-14{top:79%}
+ .seat-15,.seat-16{top:79%}
+ .room-bottom{padding-left:15px;padding-right:15px}
+}
+@media(max-height:650px){
+ .avatar-box{width:39px;height:39px}
+ .seat-name{font-size:9px}
+ .room-bottom{padding-bottom:8px}
+ .mic-circle{width:65px;height:65px}
+}
+@media(min-width:900px){
+ .app{max-width:1100px;margin:auto}
+ .table-backdrop{width:440px;height:310px}
+}
+</style>
 </head>
+
 <body>
-    <div id="loginUI">
-        <div class="box">
-            <h2 style="color:#ffd700; margin-bottom: 20px;">🎭 اتاق مافیا</h2>
-            <input type="text" id="username" placeholder="نام شما (مثلاً علی)" value="user_%%RANDOM%%">
-            <input type="text" id="roomname" placeholder="نام اتاق" value="mafia-room">
-            <button id="joinBtn">ورود به بازی</button>
-            <div class="version-tag">Version: %%VERSION%%</div>
-        </div>
-    </div>
+<main class="app">
 
-    <div id="gameRoom">
-        <div class="top-bar">
-            <div class="top-left-actions">
-                <button class="exit-btn" id="leaveBtn">خروج</button>
-                <button class="icon-btn" id="openChatBtn">✉️</button>
-            </div>
-            <div class="room-info">
-                <div class="room-name" id="displayRoomName">mafia-room</div>
-                <div class="game-version">%%VERSION%%</div>
-            </div>
-        </div>
+<!-- ورود -->
+<section id="loginUI">
+ <div class="login-box panel">
+  <div class="login-emblem">♛</div>
+  <div class="eyebrow">THE MAFIA EXPERIENCE</div>
+  <h1 class="brand">BIG GAIN</h1>
+  <div class="sub">ورود به فضای اختصاصی بازی مافیا</div>
+  <div class="gold-line"></div>
 
-        <div id="notificationArea"></div>
+  <form id="joinForm">
+   <label for="username">نام بازیکن</label>
+   <input class="field" id="username" maxlength="40"
+          autocomplete="nickname" placeholder="نام نمایشی شما"
+          value="user_%%RANDOM%%" required>
 
-        <div id="tableContainer">
-            <div class="center-table">⚙️</div>
-        </div>
+   <label for="roomname">شناسه اتاق</label>
+   <input class="field" id="roomname" maxlength="80"
+          placeholder="نام اتاق بازی" value="mafia-room" required>
 
-        <div class="bottom-bar">
-            <button class="action-btn" id="raiseHandBtn">✋</button>
-            
-            <div class="mic-btn-wrapper">
-                <div class="mic-btn-container">
-                    <svg class="timer-ring">
-                        <circle class="timer-circle" cx="45" cy="45" r="40"></circle>
-                    </svg>
-                    <button class="mic-btn closed" id="micBtn">
-                        <span class="mic-icon">🎙️</span>
-                    </button>
-                </div>
-                <div id="audio-visualizer">
-                    <div id="audio-visualizer-bar"></div>
-                </div>
-            </div>
-            
-            <div style="width: 50px;"></div>
-        </div>
-    </div>
+   <button class="gold-btn" id="joinBtn" type="submit">
+    ورود به اتاق
+   </button>
+   <div class="login-error" id="loginError" role="alert"></div>
+  </form>
+  <div class="login-footer">
+   اتصال امن صوتی با LiveKit
+   <br><br>
+   VERSION %%VERSION%%
+  </div>
+ </div>
+</section>
 
-    <div id="chatModal">
-        <div class="chat-modal-content">
-            <h3>ارسال پیام به اتاق</h3>
-            <textarea id="modalChatInput" placeholder="متن پیام خود را اینجا بنویسید..."></textarea>
-            <div class="chat-modal-actions">
-                <button id="cancelModalBtn">لغو</button>
-                <button id="sendModalMsgBtn">ارسال</button>
-            </div>
-        </div>
-    </div>
+<!-- محیط اتاق و میز بازی -->
+<section id="gameRoom" class="screen">
+ <header class="room-top">
+  <div class="top-actions">
+   <button class="circle-btn exit-btn" id="leaveBtn" title="خروج از اتاق">×</button>
+   <button class="circle-btn" id="openChatBtn" title="گفتگو">✉</button>
+  </div>
+  <div style="text-align:right">
+   <div class="room-title" id="displayRoomName">اتاق مافیا</div>
+   <div class="room-subtitle">BIG GAIN PRIVATE ROOM</div>
+  </div>
+ </header>
 
-    <div id="audio-container"></div>
+ <div class="game-state" id="gameState">
+  <span class="status-dot"></span>
+  <strong id="gameStateText">در انتظار بازیکن دوم</strong>
+ </div>
 
-    <script>
-        // این متغیر از سمت سرور پر می‌شود
-        const LIVEKIT_URL = "%%LIVEKIT_URL%%";
-        const room = new LivekitClient.Room();
-        
-        const loginUI = document.getElementById('loginUI');
-        const gameRoom = document.getElementById('gameRoom');
-        const tableContainer = document.getElementById('tableContainer');
-        const notificationArea = document.getElementById('notificationArea');
-        
-        const micBtn = document.getElementById('micBtn');
-        const raiseHandBtn = document.getElementById('raiseHandBtn');
-        const visualizerContainer = document.getElementById('audio-visualizer');
-        const visualizerBar = document.getElementById('audio-visualizer-bar');
-        
-        const chatModal = document.getElementById('chatModal');
-        const openChatBtn = document.getElementById('openChatBtn');
-        const cancelModalBtn = document.getElementById('cancelModalBtn');
-        const sendModalMsgBtn = document.getElementById('sendModalMsgBtn');
-        const modalChatInput = document.getElementById('modalChatInput');
-        
-        const timerCircle = document.querySelector('.timer-circle');
-        const circleLength = 2 * Math.PI * 40;
+ <div id="notificationArea"></div>
 
-        let localUser = null;
-        let isHandRaised = false;
-        
-        let micInterval = null;
-        let cooldownInterval = null;
-        let timeLeft = 60;
-        let isCooldown = false;
+ <div id="tableContainer">
+  <div class="table-backdrop"></div>
+  <div class="table-emblem">♛</div>
+  <div class="table-caption">BIG GAIN</div>
+ </div>
 
-        let audioCtx = null;
-        let analyser = null;
-        let dataArray = null;
+ <footer class="room-bottom">
+  <button class="action-btn" id="raiseHandBtn" title="بالا بردن دست">✋</button>
 
-        const seatPriority = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+  <div class="mic-wrap">
+   <div style="position:relative;width:78px;height:78px">
+    <svg class="timer-ring" viewBox="0 0 90 90">
+     <circle class="timer-circle" cx="45" cy="45" r="40"></circle>
+    </svg>
+    <button class="mic-circle closed" id="micBtn" title="میکروفون">
+     <span class="mic-icon">🎙</span>
+    </button>
+   </div>
+   <div id="audio-visualizer"><div id="audio-visualizer-bar"></div></div>
+   <span class="mic-label" id="micLabel">میکروفون خاموش</span>
+  </div>
 
-        function createSeats() {
-            for (let i = 1; i <= 16; i++) {
-                const seat = document.createElement('div');
-                seat.className = 'seat seat-' + i + ' empty';
-                seat.id = 'seat-' + i;
-                seat.innerHTML = '<div class="avatar-box">💺<div class="seat-number">' + i + '</div><div class="hand-indicator">✋</div></div><div class="seat-name">صندلی ' + i + '</div>';
-                tableContainer.appendChild(seat);
-            }
-        }
-        createSeats();
+  <button class="action-btn" id="roomInfoBtn" title="اطلاعات اتاق">ⓘ</button>
+ </footer>
+</section>
 
-        function showNotification(text, sender, isSystem) {
-            const toast = document.createElement('div');
-            toast.className = 'toast-msg';
-            if (isSystem) {
-                toast.innerHTML = '<span class="check-icon">✅</span> <span>' + text + '</span>';
-            } else {
-                toast.innerHTML = '<span class="sender-name">' + sender + ':</span> <span>' + text + '</span>';
-            }
-            notificationArea.appendChild(toast);
-            setTimeout(function() { toast.classList.add('show'); }, 10);
-            setTimeout(function() {
-                toast.classList.remove('show');
-                toast.classList.add('hide');
-                setTimeout(function() { toast.remove(); }, 300);
-            }, 15000);
-        }
+<!-- چت -->
+<div id="chatModal">
+ <div class="chat-box panel">
+  <h3>گفتگوی اتاق</h3>
+  <textarea class="field" id="modalChatInput"
+    maxlength="1000" placeholder="پیام خود را بنویسید..."></textarea>
+  <div class="chat-actions">
+   <button class="dark-btn" id="cancelModalBtn">بستن</button>
+   <button class="gold-btn" id="sendModalMsgBtn">ارسال پیام</button>
+  </div>
+ </div>
+</div>
 
-        function assignSeat(identity, isMuted) {
-            let assignedSeat = null;
-            for (let i = 0; i < seatPriority.length; i++) {
-                const seat = document.getElementById('seat-' + seatPriority[i]);
-                if (seat.classList.contains('empty') || seat.getAttribute('data-identity') === identity) {
-                    assignedSeat = seat; 
-                    break;
-                }
-            }
+<div id="audio-container"></div>
+</main>
 
-            if (assignedSeat) {
-                assignedSeat.classList.remove('empty');
-                assignedSeat.setAttribute('data-identity', identity);
-                assignedSeat.querySelector('.seat-name').innerText = identity;
-                
-                const avatarBox = assignedSeat.querySelector('.avatar-box');
-                for (let i = 0; i < avatarBox.childNodes.length; i++) {
-                    if (avatarBox.childNodes[i].nodeType === 3 && avatarBox.childNodes[i].nodeValue.trim() !== '') {
-                        avatarBox.childNodes[i].nodeValue = identity.charAt(0).toUpperCase();
-                        break;
-                    }
-                }
-                updateSeatMicState(identity, isMuted);
-                return assignedSeat;
-            }
-        }
+<script>
+'use strict';
 
-        // 🌟 تغییر رنگ زرد برای کسی که میکروفنش بازه
-        function updateSeatMicState(identity, isMuted) {
-            const seat = document.querySelector('.seat[data-identity="' + identity + '"]');
-            if (seat) {
-                const avatar = seat.querySelector('.avatar-box');
-                if (isMuted) {
-                    avatar.classList.remove('mic-open');
-                } else {
-                    avatar.classList.add('mic-open');
-                }
-            }
-        }
+/* تنظیمات تزریق‌شده توسط server.js */
+const LIVEKIT_URL = "%%LIVEKIT_URL%%";
+const APP_VERSION = "%%VERSION%%";
 
-        function startMicTimer() {
-            isCooldown = false;
-            timeLeft = 60;
-            timerCircle.style.strokeDasharray = circleLength;
-            timerCircle.style.strokeDashoffset = 0;
-            timerCircle.style.stroke = '#ffd700'; 
-            
-            clearInterval(micInterval);
-            micInterval = setInterval(function() {
-                timeLeft -= 0.1;
-                if (timeLeft <= 0) {
-                    timeLeft = 0;
-                    closeMicAndCooldown();
-                } else {
-                    const offset = circleLength - (timeLeft / 60) * circleLength;
-                    timerCircle.style.strokeDashoffset = offset;
-                }
-            }, 100);
-        }
+/* عناصر */
+const loginUI = document.getElementById('loginUI');
+const gameRoom = document.getElementById('gameRoom');
+const tableContainer = document.getElementById('tableContainer');
+const notificationArea = document.getElementById('notificationArea');
 
-        function closeMicAndCooldown() {
-            isCooldown = true;
-            clearInterval(micInterval);
-            room.localParticipant.setMicrophoneEnabled(false);
-            micBtn.classList.remove('open');
-            micBtn.classList.add('cooldown');
-            stopVisualizer();
+const usernameInput = document.getElementById('username');
+const roomnameInput = document.getElementById('roomname');
+const joinBtn = document.getElementById('joinBtn');
+const joinForm = document.getElementById('joinForm');
+const loginError = document.getElementById('loginError');
 
-            let cooldown = 3.0;
-            timerCircle.style.stroke = '#dc3545'; 
-            timerCircle.style.strokeDashoffset = circleLength; 
+const micBtn = document.getElementById('micBtn');
+const micLabel = document.getElementById('micLabel');
+const raiseHandBtn = document.getElementById('raiseHandBtn');
 
-            clearInterval(cooldownInterval);
-            cooldownInterval = setInterval(function() {
-                cooldown -= 0.1;
-                if (cooldown <= 0) {
-                    clearInterval(cooldownInterval);
-                    isCooldown = false;
-                    timerCircle.style.strokeDashoffset = 0; 
-                    micBtn.classList.remove('cooldown');
-                    micBtn.classList.add('closed');
-                    micBtn.querySelector('.mic-icon').innerText = '🎙️';
-                } else {
-                    micBtn.querySelector('.mic-icon').innerText = Math.ceil(cooldown);
-                    const fillOffset = (cooldown / 3.0) * circleLength;
-                    timerCircle.style.strokeDashoffset = fillOffset;
-                }
-            }, 100);
-        }
+const chatModal = document.getElementById('chatModal');
+const modalChatInput = document.getElementById('modalChatInput');
+const visualizerContainer = document.getElementById('audio-visualizer');
+const visualizerBar = document.getElementById('audio-visualizer-bar');
+const timerCircle = document.querySelector('.timer-circle');
 
-        // 🌟 شروع نوار اکولایزر (نسخه ضد خطا)
-        function startVisualizer() {
-            if (!room.localParticipant.isMicrophoneEnabled) return;
-            
-            let micPub = null;
-            room.localParticipant.audioTrackPublications.forEach(pub => {
-                if (pub.kind === 'audio' || pub.source === 'microphone') micPub = pub;
-            });
+const gameState = document.getElementById('gameState');
+const gameStateText = document.getElementById('gameStateText');
 
-            if (!micPub || !micPub.track) return;
-            
-            const stream = new MediaStream([micPub.track.mediaStreamTrack]);
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            analyser = audioCtx.createAnalyser();
-            const source = audioCtx.createMediaStreamSource(stream);
-            source.connect(analyser);
-            analyser.fftSize = 256;
-            dataArray = new Uint8Array(analyser.frequencyBinCount);
-            visualizerContainer.style.display = 'block';
+if (typeof LivekitClient === 'undefined') {
+ loginError.textContent = 'کتابخانه LiveKit بارگذاری نشده است. اتصال اینترنت را بررسی کنید.';
+ joinBtn.disabled = true;
+ throw new Error('LiveKit SDK not loaded');
+}
 
-            function draw() {
-                if (!room.localParticipant.isMicrophoneEnabled) return;
-                requestAnimationFrame(draw);
-                
-                analyser.getByteFrequencyData(dataArray);
-                let sum = 0;
-                for (let i = 0; i < dataArray.length; i++) { sum += dataArray[i]; }
-                let average = sum / dataArray.length;
-                
-                let widthPercent = (average / 255) * 100;
-                if(widthPercent < 5) widthPercent = 5;
-                visualizerBar.style.width = widthPercent + '%';
-            }
-            draw();
-        }
+const room = new LivekitClient.Room({
+ adaptiveStream:true,
+ dynacast:true,
+ stopLocalTrackOnUnpublish:true
+});
 
-        function stopVisualizer() {
-            if (audioCtx) { audioCtx.close(); audioCtx = null; }
-            visualizerBar.style.width = '0%';
-            visualizerContainer.style.display = 'none';
-        }
+const circleLength = 2 * Math.PI * 40;
+const seatPriority = Array.from({length:16},(_,i)=>i+1);
 
-        room.on(LivekitClient.RoomEvent.TrackSubscribed, function(track) {
-            if (track.kind === 'audio') document.getElementById('audio-container').appendChild(track.attach());
-        });
+let localUser = null;
+let currentRoomName = null;
+let isHandRaised = false;
+let isCooldown = false;
+let timeLeft = 60;
+let micInterval = null;
+let cooldownInterval = null;
+let audioCtx = null;
+let analyser = null;
+let visualizerFrame = null;
+let gameStarted = false;
+let joined = false;
 
-        room.on(LivekitClient.RoomEvent.ParticipantConnected, function(participant) {
-            assignSeat(participant.identity, !participant.isMicrophoneEnabled);
-            showNotification('وارد اتاق شد', participant.identity, true);
-        });
+/* ایجاد صندلی‌ها */
+function createSeats(){
+ seatPriority.forEach(number=>{
+  const seat = document.createElement('div');
+  seat.className = 'seat seat-'+number+' empty';
+  seat.id = 'seat-'+number;
 
-        room.on(LivekitClient.RoomEvent.ParticipantDisconnected, function(participant) {
-            const seat = document.querySelector('.seat[data-identity="' + participant.identity + '"]');
-            if (seat) {
-                seat.classList.add('empty');
-                seat.classList.remove('hand-raised');
-                seat.querySelector('.avatar-box').classList.remove('mic-open');
-                seat.removeAttribute('data-identity');
-            }
-            showNotification('از اتاق خارج شد', participant.identity, true);
-        });
+  const avatar = document.createElement('div');
+  avatar.className = 'avatar-box';
+  avatar.textContent = '♙';
 
-        room.on(LivekitClient.RoomEvent.TrackMuted, function(pub, participant) {
-            if (pub.kind === 'audio') updateSeatMicState(participant.identity, true);
-        });
-        room.on(LivekitClient.RoomEvent.TrackUnmuted, function(pub, participant) {
-            if (pub.kind === 'audio') updateSeatMicState(participant.identity, false);
-        });
+  const seatNumber = document.createElement('span');
+  seatNumber.className = 'seat-number';
+  seatNumber.textContent = number;
 
-        room.on(LivekitClient.RoomEvent.Disconnected, function() {
-            micBtn.classList.add('disconnected');
-            micBtn.classList.remove('closed', 'open', 'cooldown');
-            stopVisualizer();
-            showNotification('ارتباط با سرور قطع شد', 'سیستم', true);
-        });
-        room.on(LivekitClient.RoomEvent.Reconnecting, function() {
-            micBtn.classList.add('disconnected');
-        });
-        room.on(LivekitClient.RoomEvent.Reconnected, function() {
-            micBtn.classList.remove('disconnected');
-            if(room.localParticipant.isMicrophoneEnabled) micBtn.classList.add('open');
-            else micBtn.classList.add('closed');
-        });
+  const hand = document.createElement('span');
+  hand.className = 'hand-indicator';
+  hand.textContent = '✋';
 
-        room.on(LivekitClient.RoomEvent.DataReceived, function(payload, participant) {
-            const data = JSON.parse(new TextDecoder().decode(payload));
-            if (data.type === 'chat') {
-                showNotification(data.text, participant.identity, false);
-            } 
-            else if (data.type === 'hand') {
-                const seat = document.querySelector('.seat[data-identity="' + participant.identity + '"]');
-                if (seat) {
-                    if (data.state) {
-                        seat.classList.add('hand-raised');
-                        showNotification('دستش را برای صحبت بلند کرد ✋', participant.identity, false);
-                    } else {
-                        seat.classList.remove('hand-raised');
-                    }
-                }
-            }
-        });
+  avatar.append(seatNumber,hand);
 
-        function sendData(dataObj) {
-            const payload = new TextEncoder().encode(JSON.stringify(dataObj));
-            room.localParticipant.publishData(payload, LivekitClient.DataPacket_Kind.RELIABLE);
-        }
+  const name = document.createElement('div');
+  name.className = 'seat-name';
+  name.textContent = 'صندلی '+number;
 
-        document.getElementById('joinBtn').onclick = async function() {
-            const user = document.getElementById('username').value.trim();
-            const rm = document.getElementById('roomname').value.trim();
-            if (!user || !rm) return alert('اسم و نام اتاق را وارد کن!');
-            
-            const btn = document.getElementById('joinBtn');
-            btn.innerText = 'در حال اتصال...';
-            btn.disabled = true;
-            localUser = user;
-            micBtn.classList.add('disconnected');
+  seat.append(avatar,name);
+  tableContainer.appendChild(seat);
+ });
+}
+createSeats();
 
-            try {
-                const res = await fetch('/token?room=' + encodeURIComponent(rm) + '&user=' + encodeURIComponent(user));
-                const data = await res.json();
-                if(data.error) throw new Error(data.error);
+/* پیام‌های اطلاع‌رسانی */
+function showNotification(message,sender='',isSystem=false){
+ const toast = document.createElement('div');
+ toast.className = 'toast-msg';
 
-                await room.connect(LIVEKIT_URL, data.token);
-                await room.localParticipant.setMicrophoneEnabled(false); 
-                
-                loginUI.style.display = 'none';
-                gameRoom.style.display = 'flex';
-                document.getElementById('displayRoomName').innerText = rm;
-                
-                micBtn.classList.remove('disconnected');
-                micBtn.classList.add('closed');
-                
-                assignSeat(user, true);
-                showNotification('شما وارد اتاق شدید', user, true);
-                
-            } catch (e) {
-                alert('خطا: ' + e.message);
-                btn.innerText = 'ورود به بازی';
-                btn.disabled = false;
-                micBtn.classList.remove('disconnected');
-            }
-        };
+ if(isSystem){
+  toast.textContent = message;
+ }else{
+  const senderEl = document.createElement('span');
+  senderEl.className = 'sender-name';
+  senderEl.textContent = sender+': ';
 
-        micBtn.onclick = async function() {
-            if (isCooldown || micBtn.classList.contains('disconnected')) return;
+  const messageEl = document.createElement('span');
+  messageEl.textContent = message;
 
-            const isMicOn = room.localParticipant.isMicrophoneEnabled;
-            if (!isMicOn) {
-                await room.localParticipant.setMicrophoneEnabled(true);
-                micBtn.classList.remove('closed');
-                micBtn.classList.add('open');
-                micBtn.querySelector('.mic-icon').innerText = '🎙️';
-                updateSeatMicState(localUser, false);
-                startMicTimer();
-                setTimeout(startVisualizer, 300);
-            } else {
-                updateSeatMicState(localUser, true);
-                closeMicAndCooldown();
-            }
-        };
+  toast.append(senderEl,messageEl);
+ }
 
-        raiseHandBtn.onclick = function() {
-            isHandRaised = !isHandRaised;
-            sendData({ type: 'hand', state: isHandRaised });
-            
-            const mySeat = document.querySelector('.seat[data-identity="' + localUser + '"]');
-            if (isHandRaised) {
-                raiseHandBtn.classList.add('active');
-                if(mySeat) mySeat.classList.add('hand-raised');
-            } else {
-                raiseHandBtn.classList.remove('active');
-                if(mySeat) mySeat.classList.remove('hand-raised');
-            }
-        };
+ notificationArea.appendChild(toast);
 
-        openChatBtn.onclick = function() {
-            chatModal.style.display = 'flex';
-            modalChatInput.value = '';
-            modalChatInput.focus();
-        };
+ requestAnimationFrame(()=>toast.classList.add('show'));
 
-        cancelModalBtn.onclick = function() { chatModal.style.display = 'none'; };
+ setTimeout(()=>{
+  toast.classList.remove('show');
+  setTimeout(()=>toast.remove(),300);
+ },4500);
+}
 
-        sendModalMsgBtn.onclick = function() {
-            const text = modalChatInput.value.trim();
-            if (!text) return;
-            sendData({ type: 'chat', text: text });
-            showNotification(text, localUser, false);
-            chatModal.style.display = 'none';
-        };
+/* یافتن صندلی */
+function findSeat(identity){
+ return [...document.querySelectorAll('.seat[data-identity]')]
+  .find(seat=>seat.dataset.identity===identity) || null;
+}
 
-        chatModal.onclick = function(e) {
-            if (e.target === chatModal) chatModal.style.display = 'none';
-        };
+/* اختصاص صندلی */
+function assignSeat(identity,isMuted=true){
+ if(!identity)return null;
 
-        document.getElementById('leaveBtn').onclick = async function() {
-            if(confirm('آیا می‌خواهید از اتاق خارج شوید؟')) {
-                await room.disconnect();
-                window.location.reload();
-            }
-        };
-    </script>
+ let seat=findSeat(identity);
+
+ if(!seat){
+  seat=seatPriority
+   .map(n=>document.getElementById('seat-'+n))
+   .find(item=>item.classList.contains('empty'));
+ }
+
+ if(!seat){
+  showNotification('ظرفیت ۱۶ نفر اتاق تکمیل است.', '', true);
+  return null;
+ }
+
+ seat.classList.remove('empty');
+ seat.dataset.identity=identity;
+
+ const avatar=seat.querySelector('.avatar-box');
+ const name=seat.querySelector('.seat-name');
+
+ avatar.firstChild.nodeValue=identity.charAt(0).toUpperCase();
+ name.textContent=identity;
+
+ updateSeatMicState(identity,isMuted);
+ return seat;
+}
+
+/* آزادسازی صندلی */
+function releaseSeat(identity){
+ const seat=findSeat(identity);
+ if(!seat)return;
+
+ seat.classList.add('empty');
+ seat.classList.remove('hand-raised');
+ seat.querySelector('.avatar-box').classList.remove('mic-open');
+ seat.removeAttribute('data-identity');
+
+ seat.querySelector('.seat-name').textContent=
+  'صندلی '+seat.id.replace('seat-','');
+
+ seat.querySelector('.avatar-box').firstChild.nodeValue='♙';
+}
+
+/* وضعیت میکروفون بازیکن */
+function updateSeatMicState(identity,isMuted){
+ const seat=findSeat(identity);
+ if(!seat)return;
+
+ seat.querySelector('.avatar-box')
+  .classList.toggle('mic-open',!isMuted);
+}
+
+/* وضعیت تعداد بازیکنان و شروع خودکار */
+function updateGameState(){
+ if(!joined)return;
+
+ const count=room.remoteParticipants.size+1;
+
+ if(count>=2 && !gameStarted){
+  gameStarted=true;
+
+  gameState.classList.add('started');
+  gameStateText.textContent='بازی آغاز شد';
+
+  showNotification('بازیکن دوم وارد شد؛ بازی به‌صورت خودکار آغاز شد.', '', true);
+ }else if(!gameStarted){
+  gameState.classList.remove('started');
+  gameStateText.textContent='در انتظار بازیکن دوم';
+
+  if(count===1){
+   gameStateText.textContent='شما نفر اول هستید؛ منتظر بازیکن بعدی بمانید';
+  }
+ }
+
+ if(gameStarted && count<2){
+  gameStateText.textContent='بازیکن خارج شد؛ در انتظار بازیکن جایگزین';
+  gameState.classList.remove('started');
+  gameStarted=false;
+ }
+
+ return count;
+}
+
+/* میکروفون */
+function updateMicButton(state){
+ micBtn.classList.remove('open','closed','disconnected','cooldown');
+
+ if(state==='open'){
+  micBtn.classList.add('open');
+  micBtn.querySelector('.mic-icon').textContent='🎙';
+  micLabel.textContent='میکروفون روشن';
+ }else if(state==='cooldown'){
+  micBtn.classList.add('cooldown');
+ }else if(state==='disconnected'){
+  micBtn.classList.add('disconnected');
+  micBtn.querySelector('.mic-icon').textContent='×';
+  micLabel.textContent='ارتباط قطع شده';
+ }else{
+  micBtn.classList.add('closed');
+  micBtn.querySelector('.mic-icon').textContent='🎙';
+  micLabel.textContent='میکروفون خاموش';
+ }
+}
+
+/* تایمر میکروفون */
+function startMicTimer(){
+ clearInterval(micInterval);
+
+ isCooldown=false;
+ timeLeft=60;
+
+ timerCircle.style.strokeDasharray=circleLength;
+ timerCircle.style.strokeDashoffset=0;
+ timerCircle.style.stroke='#e4bd66';
+
+ micInterval=setInterval(async()=>{
+  timeLeft-=0.1;
+
+  if(timeLeft<=0){
+   clearInterval(micInterval);
+   await closeMicAndCooldown();
+  }else{
+   timerCircle.style.strokeDashoffset=
+    circleLength-(timeLeft/60)*circleLength;
+  }
+ },100);
+}
+
+async function closeMicAndCooldown(){
+ if(isCooldown)return;
+
+ isCooldown=true;
+ clearInterval(micInterval);
+
+ try{
+  if(room.state==='connected'){
+   await room.localParticipant.setMicrophoneEnabled(false);
+  }
+ }catch(error){
+  console.error('Microphone disable error:',error);
+ }
+
+ updateSeatMicState(localUser,true);
+ stopVisualizer();
+ updateMicButton('cooldown');
+
+ timerCircle.style.stroke='#b74343';
+
+ let remaining=3;
+ clearInterval(cooldownInterval);
+
+ cooldownInterval=setInterval(()=>{
+  remaining-=0.1;
+
+  if(remaining<=0){
+   clearInterval(cooldownInterval);
+   isCooldown=false;
+
+   timerCircle.style.strokeDashoffset=0;
+   timerCircle.style.stroke='#e4bd66';
+   updateMicButton('closed');
+  }else{
+   micBtn.querySelector('.mic-icon').textContent=
+    Math.ceil(remaining);
+
+   timerCircle.style.strokeDashoffset=
+    (remaining/3)*circleLength;
+  }
+ },100);
+}
+
+/* نمایش فعالیت صوتی */
+async function startVisualizer(){
+ stopVisualizer();
+
+ if(!room.localParticipant.isMicrophoneEnabled)return;
+
+ try{
+  const publications=room.localParticipant.audioTrackPublications;
+  let micPublication=null;
+
+  publications.forEach(pub=>{
+   if(pub.source===LivekitClient.Track.Source.Microphone){
+    micPublication=pub;
+   }
+  });
+
+  if(!micPublication || !micPublication.track)return;
+
+  const mediaTrack=micPublication.track.mediaStreamTrack;
+  if(!mediaTrack)return;
+
+  const stream=new MediaStream([mediaTrack]);
+
+  audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  await audioCtx.resume();
+
+  analyser=audioCtx.createAnalyser();
+  analyser.fftSize=256;
+
+  const source=audioCtx.createMediaStreamSource(stream);
+  source.connect(analyser);
+
+  const data=new Uint8Array(analyser.frequencyBinCount);
+  visualizerContainer.style.display='block';
+
+  function draw(){
+   if(!analyser || !room.localParticipant.isMicrophoneEnabled)return;
+
+   analyser.getByteFrequencyData(data);
+
+   let sum=0;
+   for(let i=0;i<data.length;i++)sum+=data[i];
+
+   const percent=Math.max(3,(sum/data.length/255)*100);
+   visualizerBar.style.width=percent+'%';
+
+   visualizerFrame=requestAnimationFrame(draw);
+  }
+
+  draw();
+ }catch(error){
+  console.warn('Visualizer error:',error);
+ }
+}
+
+function stopVisualizer(){
+ if(visualizerFrame){
+  cancelAnimationFrame(visualizerFrame);
+  visualizerFrame=null;
+ }
+
+ if(audioCtx){
+  audioCtx.close().catch(()=>{});
+  audioCtx=null;
+ }
+
+ analyser=null;
+ visualizerBar.style.width='0%';
+ visualizerContainer.style.display='none';
+}
+
+/* LiveKit: دریافت صدای بازیکنان */
+room.on(LivekitClient.RoomEvent.TrackSubscribed,
+ (track,publication,participant)=>{
+  if(track.kind==='audio'){
+   const audioElement=track.attach();
+   audioElement.autoplay=true;
+   audioElement.playsInline=true;
+   document.getElementById('audio-container').appendChild(audioElement);
+
+   audioElement.play().catch(error=>{
+    console.warn('Audio autoplay blocked:',error);
+   });
+  }
+ });
+
+room.on(LivekitClient.RoomEvent.TrackUnsubscribed,track=>{
+  track.detach().forEach(element=>element.remove());
+});
+
+/* ورود بازیکن جدید */
+room.on(LivekitClient.RoomEvent.ParticipantConnected,participant=>{
+ assignSeat(
+  participant.identity,
+  !participant.isMicrophoneEnabled
+ );
+
+ showNotification(participant.identity+' وارد اتاق شد.','',true);
+
+ updateGameState();
+});
+
+/* خروج بازیکن */
+room.on(LivekitClient.RoomEvent.ParticipantDisconnected,participant=>{
+ releaseSeat(participant.identity);
+
+ showNotification(participant.identity+' از اتاق خارج شد.','',true);
+
+ updateGameState();
+});
+
+/* تغییر وضعیت میکروفون */
+room.on(LivekitClient.RoomEvent.TrackMuted,(publication,participant)=>{
+ if(publication.kind==='audio'){
+  updateSeatMicState(participant.identity,true);
+ }
+});
+
+room.on(LivekitClient.RoomEvent.TrackUnmuted,(publication,participant)=>{
+ if(publication.kind==='audio'){
+  updateSeatMicState(participant.identity,false);
+ }
+});
+
+/* اتصال مجدد */
+room.on(LivekitClient.RoomEvent.Reconnecting,()=>{
+ updateMicButton('disconnected');
+ showNotification('در حال برقراری مجدد ارتباط...');
+});
+
+room.on(LivekitClient.RoomEvent.Reconnected,()=>{
+ updateMicButton(
+  room.localParticipant.isMicrophoneEnabled?'open':'closed'
+ );
+
+ showNotification('ارتباط مجدداً برقرار شد.','',true);
+});
+
+/* قطع ارتباط */
+room.on(LivekitClient.RoomEvent.Disconnected,()=>{
+ joined=false;
+ stopVisualizer();
+ clearInterval(micInterval);
+ clearInterval(cooldownInterval);
+ updateMicButton('disconnected');
+ showNotification('ارتباط با اتاق قطع شد.','',true);
+});
+
+/* دریافت پیام‌ها */
+room.on(LivekitClient.RoomEvent.DataReceived,(payload,participant)=>{
+ try{
+  const data=JSON.parse(new TextDecoder().decode(payload));
+
+  if(!data || typeof data!=='object')return;
+
+  if(data.type==='chat'){
+   if(typeof data.text==='string'){
+    showNotification(data.text,participant?.identity||'بازیکن');
+   }
+  }
+
+  if(data.type==='hand'){
+   const seat=findSeat(participant?.identity);
+   if(!seat)return;
+
+   seat.classList.toggle('hand-raised',Boolean(data.state));
+
+   if(data.state){
+    showNotification('دست خود را برای صحبت بلند کرد.',participant.identity);
+   }
+  }
+ }catch(error){
+  console.warn('Invalid room message:',error);
+ }
+});
+
+/* ارسال داده به بازیکنان */
+function sendData(data){
+ if(room.state!=='connected'){
+  showNotification('اتصال به اتاق برقرار نیست.');
+  return;
+ }
+
+ try{
+  const payload=new TextEncoder().encode(JSON.stringify(data));
+
+  room.localParticipant.publishData(
+   payload,
+   {reliable:true}
+  );
+ }catch(error){
+  console.error('Publish data error:',error);
+  showNotification('ارسال پیام انجام نشد.');
+ }
+}
+
+/* اتصال به اتاق */
+joinForm.addEventListener('submit',async event=>{
+ event.preventDefault();
+
+ const user=usernameInput.value.trim();
+ const roomName=roomnameInput.value.trim();
+
+ if(!user || !roomName){
+  loginError.textContent='نام بازیکن و نام اتاق الزامی است.';
+  return;
+ }
+
+ if(!LIVEKIT_URL || LIVEKIT_URL.includes('%%')){
+  loginError.textContent='آدرس LiveKit در سرور تنظیم نشده است.';
+  return;
+ }
+
+ if(joined)return;
+
+ joinBtn.disabled=true;
+ joinBtn.textContent='در حال اتصال...';
+ loginError.textContent='';
+
+ localUser=user;
+ currentRoomName=roomName;
+
+ try{
+  const response=await fetch(
+   '/token?room='+encodeURIComponent(roomName)+
+   '&user='+encodeURIComponent(user),
+   {method:'GET',credentials:'same-origin',cache:'no-store'}
+  );
+
+  const result=await response.json();
+
+  if(!response.ok || result.error){
+   throw new Error(result.error||'دریافت توکن ناموفق بود.');
+  }
+
+  const serverUrl=result.serverUrl||LIVEKIT_URL;
+
+  if(!result.token)throw new Error('توکن اتصال دریافت نشد.');
+
+  await room.connect(serverUrl,result.token);
+
+  await room.localParticipant.setMicrophoneEnabled(false);
+
+  joined=true;
+  gameStarted=false;
+  isHandRaised=false;
+
+  loginUI.style.display='none';
+  gameRoom.classList.add('active');
+
+  document.getElementById('displayRoomName').textContent=roomName;
+
+  assignSeat(user,true);
+
+  /* بازسازی صندلی بازیکنان حاضر قبل از اتصال */
+  room.remoteParticipants.forEach(participant=>{
+   assignSeat(participant.identity,!participant.isMicrophoneEnabled);
+  });
+
+  updateMicButton('closed');
+  updateGameState();
+
+  showNotification('با موفقیت وارد اتاق شدید.','',true);
+
+ }catch(error){
+  console.error('Join error:',error);
+
+  loginError.textContent=error.message||'اتصال ناموفق بود.';
+
+  try{
+   if(room.state==='connected')await room.disconnect();
+  }catch(disconnectError){
+   console.error(disconnectError);
+  }
+
+  joined=false;
+  joinBtn.disabled=false;
+  joinBtn.textContent='ورود به اتاق';
+  updateMicButton('closed');
+ }
+});
+
+/* روشن و خاموش کردن میکروفون */
+micBtn.addEventListener('click',async()=>{
+ if(!joined || room.state!=='connected'){
+  showNotification('ابتدا به اتاق متصل شوید.');
+  return;
+ }
+
+ if(isCooldown)return;
+
+ try{
+  const enabled=room.localParticipant.isMicrophoneEnabled;
+
+  if(!enabled){
+   await room.localParticipant.setMicrophoneEnabled(true);
+
+   updateMicButton('open');
+   updateSeatMicState(localUser,false);
+
+   startMicTimer();
+   startVisualizer();
+  }else{
+   updateSeatMicState(localUser,true);
+   await closeMicAndCooldown();
+  }
+
+ }catch(error){
+  console.error('Microphone error:',error);
+  showNotification('دسترسی میکروفون برقرار نشد. مجوز مرورگر را بررسی کنید.');
+ }
+});
+
+/* بالا بردن دست */
+raiseHandBtn.addEventListener('click',()=>{
+ if(!joined)return;
+
+ isHandRaised=!isHandRaised;
+
+ raiseHandBtn.classList.toggle('active',isHandRaised);
+
+ const mySeat=findSeat(localUser);
+ if(mySeat)mySeat.classList.toggle('hand-raised',isHandRaised);
+
+ sendData({type:'hand',state:isHandRaised});
+});
+
+/* باز کردن چت */
+document.getElementById('openChatBtn').addEventListener('click',()=>{
+ if(!joined)return;
+
+ modalChatInput.value='';
+ chatModal.style.display='flex';
+ modalChatInput.focus();
+});
+
+document.getElementById('cancelModalBtn').addEventListener('click',()=>{
+ chatModal.style.display='none';
+});
+
+document.getElementById('sendModalMsgBtn').addEventListener('click',()=>{
+ const text=modalChatInput.value.trim();
+
+ if(!text)return;
+ if(text.length>1000)return;
+
+ sendData({type:'chat',text});
+
+ showNotification(text,localUser);
+ chatModal.style.display='none';
+});
+
+modalChatInput.addEventListener('keydown',event=>{
+ if(event.key==='Enter' && !event.shiftKey){
+  event.preventDefault();
+  document.getElementById('sendModalMsgBtn').click();
+ }
+});
+
+chatModal.addEventListener('click',event=>{
+ if(event.target===chatModal){
+  chatModal.style.display='none';
+ }
+});
+
+/* اطلاعات اتاق */
+document.getElementById('roomInfoBtn').addEventListener('click',()=>{
+ if(!joined)return;
+
+ const count=room.remoteParticipants.size+1;
+
+ alert(
+  'نام اتاق: '+currentRoomName+
+  '\nبازیکنان حاضر: '+count+'/16'+
+  '\nوضعیت: '+(gameStarted?'بازی آغاز شده':'در انتظار بازیکن دوم')
+ );
+});
+
+/* خروج از اتاق */
+document.getElementById('leaveBtn').addEventListener('click',async()=>{
+ if(!joined)return;
+
+ if(!confirm('آیا از خروج از اتاق اطمینان دارید؟'))return;
+
+ try{
+  await room.disconnect();
+ }catch(error){
+  console.error('Leave error:',error);
+ }
+
+ joined=false;
+ stopVisualizer();
+
+ clearInterval(micInterval);
+ clearInterval(cooldownInterval);
+
+ window.location.reload();
+});
+
+/* جلوگیری از خروج تصادفی هنگام اتصال */
+window.addEventListener('beforeunload',()=>{
+ if(joined){
+  stopVisualizer();
+ }
+});
+</script>
 </body>
-          </html>
+</html>
