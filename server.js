@@ -1,51 +1,112 @@
+
 require('dotenv').config();
+
 const express = require('express');
 const { AccessToken } = require('livekit-server-sdk');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const APP_VERSION = "v0.0.2";
+const PORT = process.env.PORT || 3000;
+const APP_VERSION = 'v0.0.3';
+const MAIN_ROOM = 'mafia-main';
 
 app.get('/token', async (req, res) => {
   try {
-    const { room, user } = req.query;
-    if (!room || !user) return res.status(400).json({ error: 'نام اتاق و نام کاربری الزامی است' });
+    const user = String(req.query.user || '').trim();
 
-    const at = new AccessToken(
+    if (!user) {
+      return res.status(400).json({
+        error: 'نام کاربری الزامی است'
+      });
+    }
+
+    if (user.length > 64) {
+      return res.status(400).json({
+        error: 'نام کاربری بیش از حد طولانی است'
+      });
+    }
+
+    if (!process.env.LIVEKIT_API_KEY ||
+        !process.env.LIVEKIT_API_SECRET) {
+      return res.status(500).json({
+        error: 'تنظیمات LiveKit کامل نیست'
+      });
+    }
+
+    const accessToken = new AccessToken(
       process.env.LIVEKIT_API_KEY,
       process.env.LIVEKIT_API_SECRET,
-      { identity: user, ttl: '2h' }
+      {
+        identity: user,
+        ttl: '2h'
+      }
     );
-    at.addGrant({ roomJoin: true, room: room });
 
-    res.json({ token: await at.toJwt() });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+    accessToken.addGrant({
+      roomJoin: true,
+      room: MAIN_ROOM,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true
+    });
+
+    res.json({
+      token: await accessToken.toJwt(),
+      room: MAIN_ROOM
+    });
+
+  } catch (error) {
+    console.error('Token error:', error);
+
+    res.status(500).json({
+      error: 'خطا در ساخت توکن ورود'
+    });
   }
 });
 
-app.get('/', (req, res) => res.redirect('/test')); // اگر کسی آدرس اصلی رو زد، بفرستش به /test
+app.get('/', (req, res) => {
+  res.redirect('/test');
+});
 
 app.get('/test', (req, res) => {
   const livekitUrl = process.env.LIVEKIT_URL;
-  if (!livekitUrl) return res.status(500).send('خطا: LIVEKIT_URL تعریف نشده است.');
 
-  fs.readFile(path.join(__dirname, 'index.html'), 'utf8', (err, html) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send('خطا: فایل index.html در گیت‌هاب پیدا نشد یا در مسیر درستی نیست.');
+  if (!livekitUrl) {
+    return res.status(500).send(
+      'خطا: LIVEKIT_URL تعریف نشده است.'
+    );
+  }
+
+  fs.readFile(
+    path.join(__dirname, 'index.html'),
+    'utf8',
+    (error, html) => {
+      if (error) {
+        console.error(error);
+
+        return res.status(500).send(
+          'فایل index.html پیدا نشد.'
+        );
+      }
+
+      const finalHtml = html
+        .replace(
+          '</head>',
+          `<script>window.LIVEKIT_URL=${JSON.stringify(livekitUrl)};</script></head>`
+        )
+        .replace(/%%VERSION%%/g, APP_VERSION)
+        .replace(
+          /%%RANDOM%%/g,
+          String(Math.floor(Math.random() * 1000))
+        );
+
+      res.send(finalHtml);
     }
-    
-    let finalHtml = html
-      .replace(/%%LIVEKIT_URL%%/g, livekitUrl)
-      .replace(/%%VERSION%%/g, APP_VERSION)
-      .replace(/%%RANDOM%%/g, Math.floor(Math.random()*1000));
-
-    res.send(finalHtml);
-  });
+  );
 });
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log('Server running on port ' + (process.env.PORT || 3000));
+app.listen(PORT, () => {
+  console.log('Server running on port ' + PORT);
+  console.log('Active room: ' + MAIN_ROOM);
 });
