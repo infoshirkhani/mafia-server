@@ -1,9 +1,15 @@
 {
   "name": "mafia-server",
   "version": "1.0.0",
+  "private": true,
+  "description": "Mafia game server with LiveKit token service",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "dotenv": "^16.4.5",
