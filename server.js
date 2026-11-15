@@ -7,36 +7,55 @@ const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const APP_VERSION = 'v0.0.3';
-const MAIN_ROOM = 'mafia-main';
 
+const PORT = Number(process.env.PORT) || 3000;
+const APP_VERSION = '1.0.0';
+
+app.disable('x-powered-by');
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    version: APP_VERSION
+  });
+});
+
+// دریافت توکن اتصال LiveKit
 app.get('/token', async (req, res) => {
   try {
-    const user = String(req.query.user || '').trim();
+    const { room, user } = req.query;
 
-    if (!user) {
+    if (!room || !user) {
       return res.status(400).json({
-        error: 'نام کاربری الزامی است'
+        error: 'نام اتاق و نام کاربری الزامی است.'
       });
     }
 
-    if (user.length > 64) {
+    if (
+      typeof room !== 'string' ||
+      typeof user !== 'string' ||
+      room.length > 100 ||
+      user.length > 100
+    ) {
       return res.status(400).json({
-        error: 'نام کاربری بیش از حد طولانی است'
+        error: 'اطلاعات اتاق یا کاربر معتبر نیست.'
       });
     }
 
-    if (!process.env.LIVEKIT_API_KEY ||
-        !process.env.LIVEKIT_API_SECRET) {
+    const apiKey = process.env.LIVEKIT_API_KEY;
+    const apiSecret = process.env.LIVEKIT_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+      console.error('LiveKit credentials are missing.');
+
       return res.status(500).json({
-        error: 'تنظیمات LiveKit کامل نیست'
+        error: 'تنظیمات اتصال LiveKit کامل نیست.'
       });
     }
 
     const accessToken = new AccessToken(
-      process.env.LIVEKIT_API_KEY,
-      process.env.LIVEKIT_API_SECRET,
+      apiKey,
+      apiSecret,
       {
         identity: user,
         ttl: '2h'
@@ -45,68 +64,93 @@ app.get('/token', async (req, res) => {
 
     accessToken.addGrant({
       roomJoin: true,
-      room: MAIN_ROOM,
+      room: room,
       canPublish: true,
       canSubscribe: true,
       canPublishData: true
     });
 
-    res.json({
-      token: await accessToken.toJwt(),
-      room: MAIN_ROOM
+    const token = await accessToken.toJwt();
+
+    return res.json({
+      token,
+      serverUrl: process.env.LIVEKIT_URL
     });
 
   } catch (error) {
-    console.error('Token error:', error);
+    console.error('Token generation error:', error);
 
-    res.status(500).json({
-      error: 'خطا در ساخت توکن ورود'
+    return res.status(500).json({
+      error: 'خطا در ساخت توکن اتصال.'
     });
   }
 });
 
+// صفحه اصلی
 app.get('/', (req, res) => {
   res.redirect('/test');
 });
 
+// صفحه آزمایشی و رابط کاربری
 app.get('/test', (req, res) => {
   const livekitUrl = process.env.LIVEKIT_URL;
 
   if (!livekitUrl) {
     return res.status(500).send(
-      'خطا: LIVEKIT_URL تعریف نشده است.'
+      'خطا: LIVEKIT_URL در فایل تنظیمات تعریف نشده است.'
     );
   }
 
-  fs.readFile(
-    path.join(__dirname, 'index.html'),
-    'utf8',
-    (error, html) => {
-      if (error) {
-        console.error(error);
+  const indexPath = path.join(__dirname, 'index.html');
 
-        return res.status(500).send(
-          'فایل index.html پیدا نشد.'
-        );
-      }
+  fs.readFile(indexPath, 'utf8', (error, html) => {
+    if (error) {
+      console.error('HTML loading error:', error);
 
-      const finalHtml = html
-        .replace(
-          '</head>',
-          `<script>window.LIVEKIT_URL=${JSON.stringify(livekitUrl)};</script></head>`
-        )
-        .replace(/%%VERSION%%/g, APP_VERSION)
-        .replace(
-          /%%RANDOM%%/g,
-          String(Math.floor(Math.random() * 1000))
-        );
-
-      res.send(finalHtml);
+      return res.status(500).send(
+        'فایل index.html پیدا نشد. مسیر فایل را بررسی کنید.'
+      );
     }
-  );
+
+    const finalHtml = html
+      .replace(/%%LIVEKIT_URL%%/g, livekitUrl)
+      .replace(/%%VERSION%%/g, APP_VERSION)
+      .replace(
+        /%%RANDOM%%/g,
+        String(Date.now())
+      );
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+
+    return res.send(finalHtml);
+  });
+});
+
+// مدیریت خطاهای مسیرهای ناشناخته
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'مسیر موردنظر پیدا نشد.'
+  });
+});
+
+// مدیریت خطاهای عمومی
+app.use((error, req, res, next) => {
+  console.error('Server error:', error);
+
+  if (res.headersSent) {
+    return next(error);
+  }
+
+  res.status(500).json({
+    error: 'خطای داخلی سرور.'
+  });
 });
 
 app.listen(PORT, () => {
-  console.log('Server running on port ' + PORT);
-  console.log('Active room: ' + MAIN_ROOM);
+  console.log('================================');
+  console.log('MAFIA SERVER STARTED');
+  console.log('Version:', APP_VERSION);
+  console.log('Port:', PORT);
+  console.log('================================');
 });
